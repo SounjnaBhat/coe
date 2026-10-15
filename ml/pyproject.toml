@@ -1,7 +1,7 @@
 [project]
 name = "maize-advisor-ml"
 version = "0.1.0"
-description = "ML pipelines for Maize Advisor"
+description = "ML pipelines for Holamaatu"
 requires-python = ">=3.11"
 dependencies = [
     "torch>=2.0.0",

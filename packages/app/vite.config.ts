@@ -8,11 +8,12 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,onnx,json,yaml}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,onnx,json,yaml}'],
+        maximumFileSizeToCacheInBytes: 100 * 1024 * 1024
       },
       manifest: {
-        name: 'Maize Advisor',
-        short_name: 'Advisor',
+        name: 'Holamaatu',
+        short_name: 'Holamaatu',
         description: 'Offline-first conversational maize advisory',
         theme_color: '#1a1a2e',
         icons: [

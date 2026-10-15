@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.advisor.maize',
-  appName: 'Maize Advisor',
+  appName: 'Holamaatu',
   webDir: 'dist'
 };
 

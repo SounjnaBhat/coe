@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MaizeAdvisorCore } from '@advisor/core';
 import { MockGeminiPort } from '@advisor/core/src/network/ports';
+import { type NLUPort } from '@advisor/core/src/network/ports';
 
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/card.css';
+import './styles/app.css';
 
 import { AdvisoryCard } from './components/AdvisoryCard';
 import { ContextStrip } from './components/ContextStrip';
 import { TranscriptConfirm } from './components/TranscriptConfirm';
+import { LoginPage, type UserProfileData } from './components/LoginPage';
+import { ProfilePage } from './components/ProfilePage';
 import { callGroq, callGroqNLU } from './llm';
-import { NullGenerationPort, type NLUPort } from '@advisor/core/src/network/ports';
+import { translations, type Lang } from './translations';
 
 class GroqNLUPort implements NLUPort {
   async extractIntent(utterance: string): Promise<any> {
@@ -128,6 +132,11 @@ function useSpeechRecognition() {
     if (recognitionRef.current) recognitionRef.current.stop();
   }, []);
 
+  const setLanguage = useCallback((lang: SpeechLang) => {
+    currentLangRef.current = lang;
+    setState(s => ({ ...s, detectedLang: lang }));
+  }, []);
+
   const toggleLang = useCallback(() => {
     const newLang: SpeechLang = currentLangRef.current === 'kn-IN' ? 'en-IN' : 'kn-IN';
     currentLangRef.current = newLang;
@@ -135,10 +144,10 @@ function useSpeechRecognition() {
     return newLang;
   }, []);
 
-  return { ...state, startListening, stopListening, toggleLang };
+  return { ...state, startListening, stopListening, toggleLang, setLanguage };
 }
 
-// ─── Types ───
+// ─── Message Types ───
 interface Message {
   id: string;
   sender: 'user' | 'bot';
@@ -149,8 +158,20 @@ interface Message {
   isTranscript?: boolean;
 }
 
-// ─── App ───
 export default function App() {
+  const [activeTab, setActiveTab] = useState<'chat' | 'profile' | 'login'>('chat');
+  const [uiLang, setUiLang] = useState<Lang>('kn');
+
+  const [userProfile, setUserProfile] = useState<UserProfileData>({
+    farmerId: 'f_001',
+    name: 'Ramesh Patil',
+    phone: '9876543210',
+    location: 'Dharwad',
+    stage: '30 days',
+    soil: 'Black Soil',
+    isLoggedIn: true,
+  });
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isReady, setIsReady] = useState(false);
@@ -164,16 +185,27 @@ export default function App() {
     previousAdvisory: null as any,
     pendingIntent: undefined as string | undefined,
     farmerId: 'f_001',
-    location: undefined as string | undefined,
-    stage: undefined as string | undefined,
+    location: 'Dharwad' as string | undefined,
+    stage: '30 days' as string | undefined,
     weatherFeatures: { dToday: 60, forecastRain72h: 0 },
   });
 
   const speech = useSpeechRecognition();
+  const t = translations[uiLang];
 
   useEffect(() => {
     core.initialize().then(() => setIsReady(true));
   }, []);
+
+  // Sync user profile changes to appState
+  useEffect(() => {
+    setAppState(prev => ({
+      ...prev,
+      farmerId: userProfile.farmerId,
+      location: userProfile.location,
+      stage: userProfile.stage,
+    }));
+  }, [userProfile]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -225,7 +257,6 @@ export default function App() {
       let finalBotText = botRes.text;
       try {
         const history = messages.map(m => ({ role: m.sender, text: m.text }));
-        // If there's an advisory, pass it as JSON context. Otherwise, pass the raw text which might contain dataset RAG results!
         const ctxStr = botRes.advisory ? JSON.stringify(botRes.advisory) : (botRes.text || null);
         const llmResponse = await callGroq(history, msg, ctxStr);
         if (llmResponse) {
@@ -250,7 +281,7 @@ export default function App() {
         {
           id: `e-${Date.now()}`,
           sender: 'bot',
-          text: 'Sorry, something went wrong.',
+          text: uiLang === 'kn' ? 'ಕ್ಷಮಿಸಿ, ದೋಷವೊಂದು ಸಂಭವಿಸಿದೆ.' : 'Sorry, something went wrong.',
           timestamp: new Date(),
         },
       ]);
@@ -259,145 +290,365 @@ export default function App() {
   };
 
   const handleMicToggle = () => {
+    const targetLang: SpeechLang = uiLang === 'kn' ? 'kn-IN' : 'en-IN';
     if (speech.isListening) {
       speech.stopListening();
     } else {
-      speech.startListening(speech.detectedLang);
+      speech.startListening(targetLang);
     }
   };
 
   const handleLangToggle = () => {
-    const newLang = speech.toggleLang();
-    if (speech.isListening) {
-      speech.stopListening();
-      setTimeout(() => speech.startListening(newLang), 300);
-    }
+    const nextLang: Lang = uiLang === 'kn' ? 'en' : 'kn';
+    setUiLang(nextLang);
+    speech.setLanguage(nextLang === 'kn' ? 'kn-IN' : 'en-IN');
   };
 
-  const currentLang = speech.detectedLang === 'kn-IN' ? 'kn' : 'en';
+  const handleLoginSuccess = (updatedUser: UserProfileData) => {
+    setUserProfile(updatedUser);
+    setActiveTab('chat');
+  };
+
+  const handleLogout = () => {
+    setUserProfile(prev => ({ ...prev, isLoggedIn: false }));
+    setActiveTab('login');
+  };
 
   return (
-    <div className="app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', maxWidth: '520px', margin: '0 auto', background: 'var(--surface-page)', color: 'var(--text-primary)' }}>
-      {/* ── Header ── */}
-      <header style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', background: 'var(--surface-card)', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ fontSize: '24px' }}>🌾</div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: '500' }}>Maize Advisor</div>
-          <div style={{ fontSize: '13px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <i className="ti ti-wifi-off" aria-hidden="true" />
-            {isReady ? 'Offline-ready' : 'Loading...'}
+    <div className="app-root">
+      {/* ── App Header ── */}
+      <header className="app-header">
+        <div className="brand-section" onClick={() => setActiveTab('chat')}>
+          <div className="brand-logo">🌾</div>
+          <div>
+            <div className="brand-title">{t.appTitle}</div>
+            <div className="brand-subtitle">
+              <i className="ti ti-wifi-off" />
+              {isReady ? t.offlineStatus : t.loading}
+            </div>
           </div>
         </div>
-        <button
-          onClick={handleLangToggle}
-          title="Toggle speech language"
-          style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-control)', padding: '6px 12px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500' }}
-        >
-          {speech.detectedLang === 'kn-IN' ? 'ಕನ್ನಡ' : 'EN'}
-        </button>
+
+        <div className="nav-controls">
+          <div className="nav-tabs-desktop">
+            <button
+              className={`nav-tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
+              onClick={() => setActiveTab('chat')}
+            >
+              <i className="ti ti-message-dots" />
+              {t.navChat}
+            </button>
+            <button
+              className={`nav-tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
+              onClick={() => setActiveTab('profile')}
+            >
+              <i className="ti ti-user" />
+              {t.navProfile}
+            </button>
+            {userProfile.isLoggedIn ? (
+              <button
+                className="nav-tab-btn"
+                onClick={handleLogout}
+                title={t.navLogout}
+              >
+                <i className="ti ti-logout" />
+              </button>
+            ) : (
+              <button
+                className={`nav-tab-btn ${activeTab === 'login' ? 'active' : ''}`}
+                onClick={() => setActiveTab('login')}
+              >
+                <i className="ti ti-login" />
+                {t.navLogin}
+              </button>
+            )}
+          </div>
+
+          <button
+            onClick={handleLangToggle}
+            className="lang-toggle-btn"
+            title="Switch Language / ಭಾಷೆಯನ್ನು ಬದಲಾಯಿಸಿ"
+          >
+            {t.toggleLang}
+          </button>
+        </div>
       </header>
 
-      <ContextStrip profile={appState} lang={currentLang} />
+      {/* ── Context Strip ── */}
+      {activeTab === 'chat' && <ContextStrip profile={appState} lang={uiLang} />}
 
-      {/* ── Messages ── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {messages.map((m, index) => (
-          <React.Fragment key={m.id}>
-            {m.sender === 'user' ? (
-              <div style={{ alignSelf: 'flex-end', background: 'var(--surface-sunk)', padding: '12px 16px', borderRadius: '16px 16px 0 16px', maxWidth: '85%' }} lang={currentLang} data-lang={currentLang}>
-                {m.text}
-              </div>
-            ) : (
-              <div style={{ alignSelf: 'flex-start', width: '100%', maxWidth: '100%' }}>
-                {/* Transcript Confirm if previous message was speech */}
-                {index > 0 && messages[index - 1].sender === 'user' && messages[index - 1].isTranscript && (
-                  <TranscriptConfirm text={messages[index - 1].text} onEdit={() => setInput(messages[index - 1].text)} lang={currentLang} />
-                )}
-                
-                {m.text && (
-                  <div style={{ background: 'var(--surface-sunk)', padding: '12px 16px', borderRadius: '16px 16px 16px 0', maxWidth: '85%', marginBottom: m.advisory ? '12px' : '0' }} lang={currentLang} data-lang={currentLang}>
-                    {parseMarkdown(m.text)}
+      {/* ── App Body ── */}
+      <div className="app-body">
+        <div className="main-view-container">
+          {/* LOGIN VIEW */}
+          {activeTab === 'login' && (
+            <LoginPage
+              user={userProfile}
+              lang={uiLang}
+              onLogin={handleLoginSuccess}
+              onContinueGuest={() => setActiveTab('chat')}
+            />
+          )}
+
+          {/* PROFILE VIEW */}
+          {activeTab === 'profile' && (
+            <ProfilePage
+              user={userProfile}
+              lang={uiLang}
+              onUpdateProfile={(u) => setUserProfile(u)}
+              onLogout={handleLogout}
+              weatherFeatures={appState.weatherFeatures}
+            />
+          )}
+
+          {/* CHAT VIEW */}
+          {activeTab === 'chat' && (
+            <div className="chat-container">
+              <div className="messages-list">
+                {messages.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-secondary)' }}>
+                    <div style={{ fontSize: '48px', marginBottom: '12px' }}>🌱</div>
+                    <p style={{ fontSize: '15px', maxWidth: '360px', margin: '0 auto', lineHeight: '1.6' }}>
+                      {t.noMessagesYet}
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginTop: '20px' }}>
+                      {['Neeru hakbeka?', 'Pest control', 'Dharwad weather', 'Fertilizer dose'].map((q) => (
+                        <button
+                          key={q}
+                          onClick={() => handleSend(q)}
+                          style={{
+                            background: 'var(--surface-sunk)',
+                            border: '1px solid var(--border)',
+                            borderRadius: 'var(--radius-pill)',
+                            padding: '8px 14px',
+                            cursor: 'pointer',
+                            color: 'var(--text-secondary)',
+                            fontSize: '13px'
+                          }}
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
-                
-                {m.advisory && (
-                  <AdvisoryCard advisory={m.advisory} lang={currentLang} />
-                )}
 
-                {/* Chips */}
-                {m.followUps && m.followUps.length > 0 && (
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
-                    {m.followUps.map((fu, i) => (
-                      <button
-                        key={i}
-                        onClick={() => handleSend(fu)}
-                        style={{ background: 'var(--surface-sunk)', border: '1px solid var(--border)', borderRadius: 'var(--radius-pill)', padding: '8px 16px', cursor: 'pointer', fontFamily: 'inherit', color: 'var(--text-secondary)' }}
+                {messages.map((m, index) => (
+                  <React.Fragment key={m.id}>
+                    {m.sender === 'user' ? (
+                      <div
+                        style={{
+                          alignSelf: 'flex-end',
+                          background: 'var(--surface-sunk)',
+                          padding: '12px 16px',
+                          borderRadius: '16px 16px 0 16px',
+                          maxWidth: '85%',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                        }}
+                        lang={uiLang}
+                        data-lang={uiLang}
                       >
-                        {fu}
-                      </button>
-                    ))}
+                        {m.text}
+                      </div>
+                    ) : (
+                      <div style={{ alignSelf: 'flex-start', width: '100%', maxWidth: '100%' }}>
+                        {index > 0 && messages[index - 1].sender === 'user' && messages[index - 1].isTranscript && (
+                          <TranscriptConfirm
+                            text={messages[index - 1].text}
+                            onEdit={() => setInput(messages[index - 1].text)}
+                            lang={uiLang}
+                          />
+                        )}
+
+                        {m.text && (
+                          <div
+                            style={{
+                              background: 'var(--surface-sunk)',
+                              padding: '12px 16px',
+                              borderRadius: '16px 16px 16px 0',
+                              maxWidth: '88%',
+                              marginBottom: m.advisory ? '12px' : '0',
+                              lineHeight: '1.6'
+                            }}
+                            lang={uiLang}
+                            data-lang={uiLang}
+                          >
+                            {parseMarkdown(m.text)}
+                          </div>
+                        )}
+
+                        {m.advisory && (
+                          <AdvisoryCard advisory={m.advisory} lang={uiLang} />
+                        )}
+
+                        {m.followUps && m.followUps.length > 0 && (
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+                            {m.followUps.map((fu, i) => (
+                              <button
+                                key={i}
+                                onClick={() => handleSend(fu)}
+                                style={{
+                                  background: 'var(--surface-sunk)',
+                                  border: '1px solid var(--border)',
+                                  borderRadius: 'var(--radius-pill)',
+                                  padding: '8px 16px',
+                                  cursor: 'pointer',
+                                  fontFamily: 'inherit',
+                                  color: 'var(--text-secondary)',
+                                  fontSize: '13px'
+                                }}
+                              >
+                                {fu}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </React.Fragment>
+                ))}
+
+                {isThinking && (
+                  <div style={{ alignSelf: 'flex-start', padding: '14px 18px', background: 'var(--surface-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)' }}>
+                    <span style={{ letterSpacing: '3px', color: 'var(--text-muted)', fontWeight: 'bold' }}>••• {t.thinking}</span>
                   </div>
                 )}
+
+                <div ref={messagesEndRef} />
               </div>
-            )}
-          </React.Fragment>
-        ))}
 
-        {isThinking && (
-          <div style={{ alignSelf: 'flex-start', padding: '16px', background: 'var(--surface-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)' }}>
-            <span style={{ letterSpacing: '2px', color: 'var(--text-muted)' }}>•••</span>
-          </div>
-        )}
+              {/* Chat Input */}
+              <div className="chat-input-area">
+                <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={t.chatPlaceholder}
+                    disabled={!isReady || isThinking}
+                    style={{
+                      flex: 1,
+                      padding: '12px 18px',
+                      borderRadius: 'var(--radius-pill)',
+                      border: '1px solid var(--border)',
+                      background: 'var(--surface-sunk)',
+                      fontSize: '15px',
+                      outline: 'none',
+                      color: 'var(--text-primary)'
+                    }}
+                  />
+                  {speech.isSupported && (
+                    <button
+                      type="button"
+                      onClick={handleMicToggle}
+                      title={speech.isListening ? 'Stop mic' : 'Start voice input'}
+                      aria-label="Voice Input"
+                      style={{
+                        width: '46px',
+                        height: '46px',
+                        borderRadius: '50%',
+                        background: speech.isListening ? 'var(--accent)' : 'var(--surface-sunk)',
+                        color: speech.isListening ? 'white' : 'var(--text-primary)',
+                        border: '1px solid var(--border)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '20px'
+                      }}
+                    >
+                      {speech.isListening ? <i className="ti ti-player-stop" /> : <i className="ti ti-microphone" />}
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={!input.trim() || !isReady || isThinking}
+                    aria-label="Send Message"
+                    style={{
+                      width: '46px',
+                      height: '46px',
+                      borderRadius: '50%',
+                      background: input.trim() ? 'var(--accent)' : 'var(--surface-sunk)',
+                      color: input.trim() ? 'white' : 'var(--text-muted)',
+                      border: 'none',
+                      cursor: input.trim() ? 'pointer' : 'default',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '20px'
+                    }}
+                  >
+                    <i className="ti ti-send" />
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+        </div>
 
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* ── Input ── */}
-      <div style={{ padding: '12px 16px', background: 'var(--surface-card)', borderTop: '1px solid var(--border)' }}>
-        <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} style={{ display: 'flex', gap: '8px' }}>
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={currentLang === 'kn' ? 'ನಿಮ್ಮ ಪ್ರಶ್ನೆ ಕೇಳಿ...' : 'Ask your question...'}
-            disabled={!isReady || isThinking}
-            style={{ flex: 1, padding: '12px 16px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--border)', background: 'var(--surface-sunk)', fontSize: '16px', outline: 'none' }}
-            onFocus={(e) => e.target.style.outline = '2px solid var(--accent)'}
-            onBlur={(e) => e.target.style.outline = 'none'}
-          />
-          {speech.isSupported && (
+        {/* Desktop Sidebar Widget */}
+        <aside className="desktop-sidebar">
+          <div className="side-widget">
+            <h4><i className="ti ti-user-check" /> Active Profile</h4>
+            <p style={{ margin: '0 0 6px', fontWeight: 600 }}>{userProfile.name}</p>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
+              📍 {userProfile.location} • 🌽 {userProfile.stage}
+            </p>
             <button
-              type="button"
-              onClick={handleMicToggle}
-              title={speech.isListening ? 'Stop listening' : 'Start voice input'}
-              aria-label={speech.isListening ? 'Stop listening' : 'Start voice input'}
+              onClick={() => setActiveTab('profile')}
               style={{
-                width: '48px', height: '48px', borderRadius: '50%',
-                background: speech.isListening ? 'var(--accent)' : 'var(--surface-sunk)',
-                color: speech.isListening ? 'white' : 'var(--text-primary)',
-                border: '1px solid var(--border)', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px'
+                marginTop: '10px',
+                width: '100%',
+                padding: '6px 12px',
+                fontSize: '12px',
+                borderRadius: '6px',
+                border: '1px solid var(--border)',
+                background: 'var(--surface-card)',
+                cursor: 'pointer',
+                color: 'var(--accent)'
               }}
             >
-              {speech.isListening ? <i className="ti ti-player-stop" /> : <i className="ti ti-microphone" />}
+              Edit Profile
             </button>
-          )}
-          <button
-            type="submit"
-            disabled={!input.trim() || !isReady || isThinking}
-            aria-label="Send"
-            style={{
-              width: '48px', height: '48px', borderRadius: '50%',
-              background: input.trim() ? 'var(--accent)' : 'var(--surface-sunk)',
-              color: input.trim() ? 'white' : 'var(--text-muted)',
-              border: 'none', cursor: input.trim() ? 'pointer' : 'default',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px'
-            }}
-          >
-            <i className="ti ti-send" />
-          </button>
-        </form>
+          </div>
+
+          <div className="side-widget">
+            <h4><i className="ti ti-bulb" /> Smart Tips for Dharwad</h4>
+            <ul>
+              <li>Check soil moisture before applying nitrogen fertilizer.</li>
+              <li>Scout regularly for Fall Armyworm during vegetative stage.</li>
+              <li>Ensure proper field drainage if heavy rainfall is forecasted.</li>
+            </ul>
+          </div>
+        </aside>
       </div>
+
+      {/* ── Mobile Navigation Bar ── */}
+      <nav className="mobile-nav-bar">
+        <button
+          className={`mobile-nav-item ${activeTab === 'chat' ? 'active' : ''}`}
+          onClick={() => setActiveTab('chat')}
+        >
+          <i className="ti ti-message-dots" />
+          <span>{t.navChat}</span>
+        </button>
+
+        <button
+          className={`mobile-nav-item ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          <i className="ti ti-user" />
+          <span>{t.navProfile}</span>
+        </button>
+
+        <button
+          className={`mobile-nav-item ${activeTab === 'login' ? 'active' : ''}`}
+          onClick={() => setActiveTab(userProfile.isLoggedIn ? 'profile' : 'login')}
+        >
+          <i className={userProfile.isLoggedIn ? 'ti ti-user-check' : 'ti ti-login'} />
+          <span>{userProfile.isLoggedIn ? userProfile.name.split(' ')[0] : t.navLogin}</span>
+        </button>
+      </nav>
     </div>
   );
 }

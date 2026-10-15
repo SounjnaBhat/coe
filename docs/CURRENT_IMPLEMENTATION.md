@@ -1,6 +1,6 @@
 # Current Implementation Status
 
-This document outlines the architectural components and features implemented in the Maize Advisory project up to the current stage.
+This document outlines the architectural components and features implemented in the Holamaatu project up to the current stage.
 
 ## 1. Knowledge Base and Data Layer
 *   **Rulepacks:** Deterministic agronomic rules are defined in YAML format under `knowledge/rulepacks/`. Current rulepacks cover irrigation, pest management (Fall Armyworm), fertilizer dosing, and sowing windows.
