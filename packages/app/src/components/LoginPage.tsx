@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { translations, type Lang } from '../translations';
+import { fetchFarmerProfile } from '../supabase';
 
 export interface UserProfileData {
   farmerId: string;
@@ -26,6 +27,25 @@ export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPagePro
   const [location, setLocation] = useState(user.location || 'Dharwad');
   const [stage, setStage] = useState(user.stage || '30 days');
   const [soil, setSoil] = useState(user.soil || 'Black Soil');
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handlePhoneBlur = async () => {
+    const clean = phone.trim();
+    if (clean.length >= 10) {
+      setIsSearching(true);
+      try {
+        const existing = await fetchFarmerProfile(clean);
+        if (existing) {
+          if (existing.name) setName(existing.name);
+          if (existing.location) setLocation(existing.location);
+          if (existing.stage) setStage(existing.stage);
+          if (existing.soil) setSoil(existing.soil);
+        }
+      } finally {
+        setIsSearching(false);
+      }
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +91,7 @@ export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPagePro
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              onBlur={handlePhoneBlur}
               placeholder={t.phonePlaceholder}
               maxLength={10}
             />

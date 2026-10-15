@@ -15,6 +15,7 @@ import { LoginPage, type UserProfileData } from './components/LoginPage';
 import { ProfilePage } from './components/ProfilePage';
 import { callGroq, callGroqNLU } from './llm';
 import { translations, type Lang } from './translations';
+import { syncFarmerProfile, fetchFarmerProfile, logChatMessage } from './supabase';
 
 class GroqNLUPort implements NLUPort {
   async extractIntent(utterance: string): Promise<any> {
@@ -195,6 +196,23 @@ export default function App() {
 
   useEffect(() => {
     core.initialize().then(() => setIsReady(true));
+
+    // Load saved user profile and sync with Supabase
+    const saved = localStorage.getItem('holamaatu_user');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setUserProfile(parsed);
+        const lookup = parsed.farmerId || parsed.phone;
+        if (lookup) {
+          fetchFarmerProfile(lookup).then(fresh => {
+            if (fresh) {
+              setUserProfile(prev => ({ ...prev, ...fresh, isLoggedIn: prev.isLoggedIn }));
+            }
+          });
+        }
+      } catch {}
+    }
   }, []);
 
   // Sync user profile changes to appState
@@ -238,6 +256,9 @@ export default function App() {
     setInput('');
     setIsThinking(true);
 
+    // Persist user interaction to Supabase asynchronously
+    logChatMessage(userProfile.farmerId, 'user', msg);
+
     const currentState = { ...appState, turnIndex: appState.turnIndex + 1 };
 
     try {
@@ -275,6 +296,9 @@ export default function App() {
         advisory: botRes.advisory
       };
       setMessages(m => [...m, botMsg]);
+
+      // Persist bot advisory to Supabase asynchronously
+      logChatMessage(userProfile.farmerId, 'bot', finalBotText, botRes.advisory);
     } catch {
       setMessages(m => [
         ...m,
@@ -304,13 +328,23 @@ export default function App() {
     speech.setLanguage(nextLang === 'kn' ? 'kn-IN' : 'en-IN');
   };
 
-  const handleLoginSuccess = (updatedUser: UserProfileData) => {
+  const handleLoginSuccess = async (updatedUser: UserProfileData) => {
     setUserProfile(updatedUser);
+    localStorage.setItem('holamaatu_user', JSON.stringify(updatedUser));
+    await syncFarmerProfile(updatedUser);
     setActiveTab('chat');
   };
 
+  const handleUpdateProfile = async (updatedUser: UserProfileData) => {
+    setUserProfile(updatedUser);
+    localStorage.setItem('holamaatu_user', JSON.stringify(updatedUser));
+    await syncFarmerProfile(updatedUser);
+  };
+
   const handleLogout = () => {
-    setUserProfile(prev => ({ ...prev, isLoggedIn: false }));
+    const loggedOut = { ...userProfile, isLoggedIn: false };
+    setUserProfile(loggedOut);
+    localStorage.setItem('holamaatu_user', JSON.stringify(loggedOut));
     setActiveTab('login');
   };
 
@@ -395,7 +429,7 @@ export default function App() {
             <ProfilePage
               user={userProfile}
               lang={uiLang}
-              onUpdateProfile={(u) => setUserProfile(u)}
+              onUpdateProfile={handleUpdateProfile}
               onLogout={handleLogout}
               weatherFeatures={appState.weatherFeatures}
             />
