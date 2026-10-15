@@ -98,38 +98,53 @@ export class MaizeAdvisorCore {
                 "ನಮಸ್ಕಾರ! ನೀವು ಕನ್ನಡದಲ್ಲಿಯೂ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಬಹುದು. ಮೆಕ್ಕೆಜೋಳದ ಕೀಟ, ರಸಗೊಬ್ಬರ, ಮತ್ತು ನೀರಿನ ನಿರ್ವಹಣೆ ಬಗ್ಗೆ ನಾನು ಸಹಾಯ ಮಾಡುತ್ತೇನೆ." : 
                 "Hello! I can answer your questions in English or Kannada. Ask me about irrigation, pests, or fertilizers for your maize crop.", advisory: null };
         }
-        if (frame.intent === 'explain_why' && state.previousAdvisory) {
-            const adv = state.previousAdvisory;
-            if (effectiveLang === 'kn') {
-                if (adv.intent === 'irrigation_advice') {
-                    const depl = adv.facts.find(f => f.label === 'Depletion')?.value || '3';
-                    const rain = adv.facts.find(f => f.label === 'Forecast Rain' || f.label === 'Forecast Rain (72h)')?.value || '0';
-                    if (adv.headline === 'WAIT') {
+        if (frame.intent === 'explain_why') {
+            let adv = state.previousAdvisory;
+            if (!adv) {
+                try {
+                    const dummyFrame = { intent: 'irrigation_advice', intentConfidence: 1.0, slots: {}, lang: effectiveLang };
+                    adv = this.ruleEngine.evaluate(dummyFrame, {
+                        ...state.weatherFeatures,
+                        location: state.location,
+                        stage: state.stage
+                    });
+                    state.previousAdvisory = adv;
+                } catch {
+                    // Fallback to default
+                }
+            }
+            if (adv) {
+                if (effectiveLang === 'kn') {
+                    if (adv.intent === 'irrigation_advice') {
+                        const depl = adv.facts.find(f => f.label === 'Depletion')?.value || '1';
+                        const rain = adv.facts.find(f => f.label === 'Forecast Rain' || f.label === 'Forecast Rain (72h)')?.value || '0';
+                        if (adv.headline === 'WAIT') {
+                            return {
+                                text: `💡 **ಸಲಹೆಯ ವೈಜ್ಞಾನಿಕ ವಿವರಣೆ (ಏಕೆ ಕಾಯಬೇಕು?):**\n\n- ನಿಮ್ಮ ಹೊಲದ ಮಣ್ಣಿನಲ್ಲಿ ನೀರಿನ ಕೊರತೆ ಕೇವಲ **${depl} ಮಿ.ಮೀ** ಇದೆ.\n- ಮೆಕ್ಕೆಜೋಳದ ಸುರಕ್ಷಿತ ತೇವಾಂಶ ಮಿತಿ (MAD) **55 ಮಿ.ಮೀ** ವರೆಗೆ ಇರುತ್ತದೆ.\n- ಮುಂದಿನ 72 ಗಂಟೆಗಳಲ್ಲಿ **${rain} ಮಿ.ಮೀ** ಮಳೆಯ ಮುನ್ಸೂಚನೆ ಇದೆ.\n\nಆದ್ದರಿಂದ ಮಣ್ಣಿನಲ್ಲಿ ಬೆಳೆಯ ಬೆಳವಣಿಗೆಗೆ ಸಾಕಷ್ಟು ತೇವಾಂಶವಿರುವುದರಿಂದ ಈಗ ನೀರುಣಿಸುವ ಅಗತ್ಯವಿಲ್ಲ. ಹೆಚ್ಚು ನೀರು ಹಾಕಿದರೆ ಬೇರು ಕೊಳೆಯುವ ಸಂಭವವಿರುತ್ತದೆ.`,
+                                advisory: null
+                            };
+                        } else {
+                            return {
+                                text: `💡 **ಸಲಹೆಯ ವೈಜ್ಞಾನಿಕ ವಿವರಣೆ (ಏಕೆ ನೀರು ಹಾಕಬೇಕು?):**\n\n- ನಿಮ್ಮ ಮಣ್ಣಿನಲ್ಲಿ ನೀರಿನ ಕೊರತೆ **${depl} ಮಿ.ಮೀ** ತಲುಪಿದ್ದು, ಸುರಕ್ಷಿತ ಮಿತಿಯನ್ನು (MAD) ಮೀರಿದೆ.\n- ಮುಂದಿನ ದಿನಗಳಲ್ಲಿ ಮಳೆಯಾಗುವ ಸಾಧ್ಯತೆ ಕಡಿಮೆ ಇರುವುದರಿಂದ, ಬೆಳೆಯ ಬೆಳವಣಿಗೆಗೆ ಧಕ್ಕೆಯಾಗದಂತೆ ತಕ್ಷಣ ನೀರುಣಿಸುವುದು ಅತ್ಯಗತ್ಯ.`,
+                                advisory: null
+                            };
+                        }
+                    } else if (adv.intent === 'pest_management') {
                         return {
-                            text: `💡 **ಸಲಹೆಯ ವೈಜ್ಞಾನಿಕ ವಿವರಣೆ (ಏಕೆ ಕಾಯಬೇಕು?):**\n\n- ನಿಮ್ಮ ಹೊಲದ ಮಣ್ಣಿನಲ್ಲಿ ನೀರಿನ ಕೊರತೆ ಕೇವಲ **${depl} ಮಿ.ಮೀ** ಇದೆ.\n- ಮೆಕ್ಕೆಜೋಳದ ಸುರಕ್ಷಿತ ತೇವಾಂಶ ಮಿತಿ (MAD) **55 ಮಿ.ಮೀ** ವರೆಗೆ ಇರುತ್ತದೆ.\n- ಮುಂದಿನ 72 ಗಂಟೆಗಳಲ್ಲಿ **${rain} ಮಿ.ಮೀ** ಮಳೆಯ ಮುನ್ಸೂಚನೆ ಇದೆ.\n\nಆದ್ದರಿಂದ ಮಣ್ಣಿನಲ್ಲಿ ಬೆಳೆಯ ಬೆಳವಣಿಗೆಗೆ ಸಾಕಷ್ಟು ತೇವಾಂಶವಿರುವುದರಿಂದ ಈಗ ನೀರುಣಿಸುವ ಅಗತ್ಯವಿಲ್ಲ. ಹೆಚ್ಚು ನೀರು ಹಾಕಿದರೆ ಬೇರು ಕೊಳೆಯುವ ಸಂಭವವಿರುತ್ತದೆ.`,
+                            text: `💡 **ಸಲಹೆಯ ವೈಜ್ಞಾನಿಕ ವಿವರಣೆ (ಕೀಟ ನಿಯಂತ್ರಣ):**\n\n- ಧಾರವಾಡ ಪ್ರದೇಶದಲ್ಲಿ ಲದ್ದಿ ಹುಳು (Fall Armyworm) ಬಾಧೆಯು ಆರ್ಥಿಕ ಹಾನಿ ಮಿತಿಯನ್ನು (10% ಎಲೆ ಹಾನಿ) ತಲುಪಿದೆ.\n- ಕೀಟವು ಸುಳಿ ಮತ್ತು ಎಲೆಗಳನ್ನು ತಿಂದು ಬೆಳೆಯನ್ನು ಹಾಳುಮಾಡುವುದನ್ನು ತಡೆಯಲು ತಕ್ಷಣ ಹೊಲ ಪರಿಶೀಲಿಸಿ, ಸ್ಥಳೀಯ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರ (RSK) ಸಲಹೆಯಂತೆ ಶಿಫಾರಸು ಮಾಡಿದ ಕೀಟನಾಶಕ ಸಿಂಪಡಿಸಬೇಕು.`,
                             advisory: null
                         };
-                    } else {
+                    } else if (adv.intent === 'fertilizer_dose') {
                         return {
-                            text: `💡 **ಸಲಹೆಯ ವೈಜ್ಞಾನಿಕ ವಿವರಣೆ (ಏಕೆ ನೀರು ಹಾಕಬೇಕು?):**\n\n- ನಿಮ್ಮ ಮಣ್ಣಿನಲ್ಲಿ ನೀರಿನ ಕೊರತೆ **${depl} ಮಿ.ಮೀ** ತಲುಪಿದ್ದು, ಸುರಕ್ಷಿತ ಮಿತಿಯನ್ನು (MAD) ಮೀರಿದೆ.\n- ಮುಂದಿನ ದಿನಗಳಲ್ಲಿ ಮಳೆಯಾಗುವ ಸಾಧ್ಯತೆ ಕಡಿಮೆ ಇರುವುದರಿಂದ, ಬೆಳೆಯ ಬೆಳವಣಿಗೆಗೆ ಧಕ್ಕೆಯಾಗದಂತೆ ತಕ್ಷಣ ನೀರುಣಿಸುವುದು ಅತ್ಯಗತ್ಯ.`,
+                            text: `💡 **ಸಲಹೆಯ ವೈಜ್ಞಾನಿಕ ವಿವರಣೆ (ರಸಗೊಬ್ಬರ ಪ್ರಮಾಣ):**\n\n- ಮೆಕ್ಕೆಜೋಳದ ಉತ್ತಮ ಇಳುವರಿಗಾಗಿ ಸಾರಜನಕ (ಯೂರಿಯಾ) ಅತ್ಯಂತ ಪ್ರಮುಖ ಪೋಷಕಾಂಶವಾಗಿದೆ.\n- ಬಿತ್ತನೆಯ 30-40 ದಿನಗಳ ಬೆಳವಣಿಗೆ ಹಂತದಲ್ಲಿ ಬೆಳೆಯು ವೇಗವಾಗಿ ಬೆಳೆಯುವುದರಿಂದ, ಈ ಸಮಯದಲ್ಲಿ ಮೊದಲ ಮೇಲುಗೊಬ್ಬರವನ್ನು ನೀಡಿದರೆ ಕಾಂಡ ಮತ್ತು ಎಲೆಗಳು ಬಲಗೊಳ್ಳುತ್ತವೆ.`,
                             advisory: null
                         };
                     }
-                } else if (adv.intent === 'pest_management') {
-                    return {
-                        text: `💡 **ಸಲಹೆಯ ವೈಜ್ಞಾನಿಕ ವಿವರಣೆ:**\n\n- ಧಾರವಾಡ ಪ್ರದೇಶದಲ್ಲಿ ಲದ್ದಿ ಹುಳು (Fall Armyworm) ಬಾಧೆಯು ಆರ್ಥಿಕ ಹಾನಿ ಮಿತಿಯನ್ನು (10% ಎಲೆ ಹಾನಿ) ತಲುಪಿದೆ.\n- ಕೀಟವು ಸುಳಿ ಮತ್ತು ಎಲೆಗಳನ್ನು ತಿಂದು ಬೆಳೆಯನ್ನು ಹಾಳುಮಾಡುವುದನ್ನು ತಡೆಯಲು ತಕ್ಷಣ ಹೊಲ ಪರಿಶೀಲಿಸಿ, ಸ್ಥಳೀಯ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರ (RSK) ಸಲಹೆಯಂತೆ ಶಿಫಾರಸು ಮಾಡಿದ ಕೀಟನಾಶಕ ಸಿಂಪಡಿಸಬೇಕು.`,
-                        advisory: null
-                    };
-                } else if (adv.intent === 'fertilizer_dose') {
-                    return {
-                        text: `💡 **ಸಲಹೆಯ ವೈಜ್ಞಾನಿಕ ವಿವರಣೆ:**\n\n- ಮೆಕ್ಕೆಜೋಳದ ಉತ್ತಮ ಇಳುವರಿಗಾಗಿ ಸಾರಜನಕ (ಯೂರಿಯಾ) ಅತ್ಯಂತ ಪ್ರಮುಖ ಪೋಷಕಾಂಶವಾಗಿದೆ.\n- ಬಿತ್ತನೆಯ 30-40 ದಿನಗಳ ಬೆಳವಣಿಗೆ ಹಂತದಲ್ಲಿ ಬೆಳೆಯು ವೇಗವಾಗಿ ಬೆಳೆಯುವುದರಿಂದ, ಈ ಸಮಯದಲ್ಲಿ ಮೊದಲ ಮೇಲುಗೊಬ್ಬರವನ್ನು ನೀಡಿದರೆ ಕಾಂಡ ಮತ್ತು ಎಲೆಗಳು ಬಲಗೊಳ್ಳುತ್ತವೆ.`,
-                        advisory: null
-                    };
+                    const actionKn = adv.headline === 'WAIT' ? 'ಕಾಯಲು' : 'ಕ್ರಮ ಕೈಗೊಳ್ಳಲು';
+                    return { text: `💡 ನೀವು ${actionKn} ಸಲಹೆ ನೀಡಲಾಗಿದೆ ಏಕೆಂದರೆ ಮಣ್ಣು ಹಾಗೂ ಬೆಳೆಯ ಸ್ಥಿತಿಯ ವೈಜ್ಞಾನಿಕ ವಿಶ್ಲೇಷಣೆಯ ಪ್ರಕಾರ ಇದು ಅತ್ಯಂತ ಸೂಕ್ತ ಕ್ರಮವಾಗಿದೆ.`, advisory: null };
                 }
-                const actionKn = adv.headline === 'WAIT' ? 'ಕಾಯಲು' : 'ಕ್ರಮ ಕೈಗೊಳ್ಳಲು';
-                return { text: `💡 ನೀವು ${actionKn} ಸಲಹೆ ನೀಡಲಾಗಿದೆ ಏಕೆಂದರೆ ಮಣ್ಣು ಹಾಗೂ ಬೆಳೆಯ ಸ್ಥಿತಿಯ ವೈಜ್ಞಾನಿಕ ವಿಶ್ಲೇಷಣೆಯ ಪ್ರಕಾರ ಇದು ಅತ್ಯಂತ ಸೂಕ್ತ ಕ್ರಮವಾಗಿದೆ.`, advisory: null };
+                return { text: `You are advised to ${adv.headline} because ${adv.facts.map(f => `${f.label} is ${f.value}`).join(' and ')}.`, advisory: null };
             }
-            return { text: `You are advised to ${adv.headline} because ${adv.facts.map(f => `${f.label} is ${f.value}`).join(' and ')}.`, advisory: null };
         }
         if (frame.intent === 'alternative' && state.previousAdvisory) {
             const prevIntent = state.previousAdvisory.intent;

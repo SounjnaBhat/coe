@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { translations, type Lang } from '../translations';
+import { translations, type Lang, calculateStageFromSowingDate } from '../translations';
 import type { UserProfileData } from './LoginPage';
 
 interface ProfilePageProps {
@@ -16,9 +16,18 @@ export function ProfilePage({ user, lang, onUpdateProfile, onLogout, weatherFeat
   const [name, setName] = useState(user.name);
   const [phone, setPhone] = useState(user.phone);
   const [location, setLocation] = useState(user.location || 'Dharwad');
+  const [sowingDate, setSowingDate] = useState(user.sowingDate || '');
   const [stage, setStage] = useState(user.stage || 'Sowing');
   const [soil, setSoil] = useState(user.soil || 'Black Soil');
   const [savedNotice, setSavedNotice] = useState(false);
+
+  const handleSowingDateChange = (dateVal: string) => {
+    setSowingDate(dateVal);
+    if (dateVal) {
+      const calc = calculateStageFromSowingDate(dateVal);
+      setStage(calc.stageKey);
+    }
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,6 +36,7 @@ export function ProfilePage({ user, lang, onUpdateProfile, onLogout, weatherFeat
       name,
       phone,
       location,
+      sowingDate,
       stage,
       soil,
     });
@@ -97,6 +107,26 @@ export function ProfilePage({ user, lang, onUpdateProfile, onLogout, weatherFeat
               <option value="Haveri">Haveri (ಹಾವೇರಿ)</option>
               <option value="Gadag">Gadag (ಗದಗ)</option>
             </select>
+          </div>
+
+          <div className="form-group">
+            <label>
+              <i className="ti ti-calendar" /> {t.sowingDateLabel}
+            </label>
+            <input
+              type="date"
+              value={sowingDate}
+              onChange={(e) => handleSowingDateChange(e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
+            />
+            {sowingDate && (
+              <div style={{ marginTop: '6px', fontSize: '12px', color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <i className="ti ti-sparkles" />
+                <span>
+                  {t.sowingCalcPrefix}: {calculateStageFromSowingDate(sowingDate).daysElapsed} {lang === 'kn' ? 'ದಿನಗಳು' : 'days'} ➔ {lang === 'kn' ? calculateStageFromSowingDate(sowingDate).labelKn : calculateStageFromSowingDate(sowingDate).labelEn}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="form-group">

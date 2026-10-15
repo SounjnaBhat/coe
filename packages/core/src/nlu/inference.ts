@@ -137,7 +137,7 @@ export class NLUInferenceEngine {
         const hasDomainIrrigation = txt.includes('irrigat') || txt.includes('water') || txt.includes('ನೀರು') || txt.includes('bisi') || txt.includes('neeru');
         const hasDomainPest = txt.includes('faw') || txt.includes('pest') || txt.includes('ಹುಳು') || txt.includes('armyworm') || txt.includes('fall army') || txt.includes('ಕೀಟ');
         const hasDomainFert = txt.includes('urea') || txt.includes('fertiliz') || txt.includes('ಗೊಬ್ಬರ') || txt.includes('ಯೂರಿಯಾ') || txt.includes('dose') || txt.includes('nutrient');
-        const hasExplainWhy = txt.includes('why') || txt.includes('ಏಕೆ') || txt.includes('ಯಾಕೆ') || txt.includes('reason') || txt.includes('ಕಾರಣ');
+        const hasExplainWhy = txt.includes('why') || txt.includes('ಏಕೆ') || txt.includes('ಯಾಕೆ') || txt.includes('reason') || txt.includes('ಕಾರಣ') || txt.includes('ವಿವರಣೆ') || txt.includes('explain');
         const hasAlternative = txt.includes('alternative') || txt.includes('ಪರ್ಯಾಯ') || txt.includes('ಬೇರೆ');
         const hasChallenge = txt.includes('are you sure') || txt.includes('ಖಂಡಿತ') || txt.includes('ಖಚಿತ');
         const hasConsequence = txt.includes('what if') || txt.includes('rains') || txt.includes('ಮಳೆ') || txt.includes('ಆದರೆ');

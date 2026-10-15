@@ -64,7 +64,10 @@ export const translations = {
     nameLabel: 'Farmer / Worker Name',
     namePlaceholder: 'e.g. Ramesh Patil',
     districtLabel: 'District / Location',
-    stageLabel: 'Current Crop Stage',
+    sowingDateLabel: 'Date of Sowing',
+    sowingDateHint: 'Select when seeds were sown to auto-calculate the crop stage',
+    sowingCalcPrefix: 'Days since sowing',
+    stageLabel: 'Current Crop Stage (Auto-calculated or Manual)',
     soilLabel: 'Soil Type',
     langPreferenceLabel: 'Preferred Language',
     loginSubmit: 'Sign In / Save Profile',
@@ -164,7 +167,10 @@ export const translations = {
     nameLabel: 'ರೈತರ / ಕಾರ್ಯಕರ್ತರ ಹೆಸರು',
     namePlaceholder: 'ಉದಾ: ರಮೇಶ್ ಪಾಟೀಲ್',
     districtLabel: 'ಜಿಲ್ಲೆ / ಸ್ಥಳ',
-    stageLabel: 'ಪ್ರಸ್ತುತ ಬೆಳೆ ಹಂತ',
+    sowingDateLabel: 'ಬಿತ್ತನೆ ಮಾಡಿದ ದಿನಾಂಕ',
+    sowingDateHint: 'ಬೆಳೆಯ ಹಂತವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಲೆಕ್ಕಹಾಕಲು ಬಿತ್ತನೆ ಮಾಡಿದ ದಿನಾಂಕ ಆಯ್ಕೆಮಾಡಿ',
+    sowingCalcPrefix: 'ಬಿತ್ತನೆ ಮಾಡಿ ಕಳೆದಿರುವ ದಿನಗಳು',
+    stageLabel: 'ಪ್ರಸ್ತುತ ಬೆಳೆ ಹಂತ (ದಿನಾಂಕದಿಂದ ಅಥವಾ ನೇರವಾಗಿ ಆಯ್ಕೆಮಾಡಿ)',
     soilLabel: 'ಮಣ್ಣಿನ ವಿಧ',
     langPreferenceLabel: 'ಆದ್ಯತೆಯ ಭಾಷೆ',
     loginSubmit: 'ಲಾಗಿನ್ ಮಾಡಿ / ಪ್ರೊಫೈಲ್ ಉಳಿಸಿ',
@@ -303,4 +309,64 @@ export function localizeWeatherCondition(conditionText: string, lang: Lang = 'en
     if (key.includes(k)) return v;
   }
   return conditionText;
+}
+
+export interface SowingStageCalc {
+  daysElapsed: number;
+  stageKey: string;
+  stageIndex: number;
+  labelKn: string;
+  labelEn: string;
+}
+
+export function calculateStageFromSowingDate(dateStr?: string): SowingStageCalc {
+  if (!dateStr) {
+    return {
+      daysElapsed: 0,
+      stageKey: 'Sowing',
+      stageIndex: 0,
+      labelKn: 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನಗಳು)',
+      labelEn: 'Sowing (0-15 days)'
+    };
+  }
+  const sowing = new Date(dateStr);
+  const today = new Date();
+  sowing.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+  const diffTime = today.getTime() - sowing.getTime();
+  const days = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+
+  if (days <= 15) {
+    return {
+      daysElapsed: days,
+      stageKey: 'Sowing',
+      stageIndex: 0,
+      labelKn: `ಬಿತ್ತನೆ ಹಂತ (${days} ದಿನ)`,
+      labelEn: `Sowing (${days}d)`
+    };
+  } else if (days <= 45) {
+    return {
+      daysElapsed: days,
+      stageKey: '30 days',
+      stageIndex: 1,
+      labelKn: `ಬೆಳವಣಿಗೆ ಹಂತ (${days} ದಿನ)`,
+      labelEn: `Vegetative (${days}d)`
+    };
+  } else if (days <= 65) {
+    return {
+      daysElapsed: days,
+      stageKey: '45 days',
+      stageIndex: 2,
+      labelKn: `ಹೂವು / ತೆನೆ ಹಂತ (${days} ದಿನ)`,
+      labelEn: `Flowering (${days}d)`
+    };
+  } else {
+    return {
+      daysElapsed: days,
+      stageKey: '60 days',
+      stageIndex: 3,
+      labelKn: `ಕಾಳು ತುಂಬುವ / ಕೊಯ್ಲು ಹಂತ (${days} ದಿನ)`,
+      labelEn: `Grain Filling / Harvest (${days}d)`
+    };
+  }
 }

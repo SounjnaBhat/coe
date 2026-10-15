@@ -20,7 +20,8 @@ import {
   type Lang,
   localizeLocation,
   localizeStage,
-  localizeWeatherCondition
+  localizeWeatherCondition,
+  calculateStageFromSowingDate
 } from './translations';
 import { syncFarmerProfile, fetchFarmerProfile, logChatMessage } from './supabase';
 import { fetchLiveWeather, type WeatherData } from './weather';
@@ -198,6 +199,7 @@ export default function App() {
       location: 'Dharwad',
       stage: 'Sowing',
       soil: 'Black Soil',
+      sowingDate: '',
       isLoggedIn: false,
     };
   });
@@ -221,6 +223,7 @@ export default function App() {
   const [isThinking, setIsThinking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastAdvisoryRef = useRef<any>(null);
 
   const [appState, setAppState] = useState({
     sessionId: 'web-session',
@@ -332,10 +335,19 @@ export default function App() {
     // Persist user interaction to Supabase asynchronously
     logChatMessage(userProfile.farmerId, 'user', msg);
 
-    const currentState = { ...appState, turnIndex: appState.turnIndex + 1, lang: uiLang };
+    const currentState = {
+      ...appState,
+      turnIndex: appState.turnIndex + 1,
+      lang: uiLang,
+      previousAdvisory: appState.previousAdvisory || lastAdvisoryRef.current
+    };
 
     try {
       const botRes = await core.processUtterance(msg, currentState);
+      if (botRes.advisory) {
+        lastAdvisoryRef.current = botRes.advisory;
+        currentState.previousAdvisory = botRes.advisory;
+      }
       setAppState(currentState);
 
       let followUps = botRes.advisory?.suggestedFollowUps || [];
@@ -354,17 +366,21 @@ export default function App() {
         followUps = followUps.map(fu => knMap[fu] || fu);
       }
 
-      // Re-enable Groq LLM overriding the text response with full translation support
+      // Keep deterministic Kannada rule engine explanation for why/consequence/alternative
       let finalBotText = botRes.text;
-      try {
-        const history = messages.map(m => ({ role: m.sender, text: m.text }));
-        const ctxStr = botRes.advisory ? JSON.stringify(botRes.advisory) : (botRes.text || null);
-        const llmResponse = await callGroq(history, msg, ctxStr, uiLang);
-        if (llmResponse) {
-          finalBotText = llmResponse;
+      const isScientificExplanation = botRes.text?.startsWith('💡') || msg.toLowerCase().includes('ಏಕೆ') || msg.toLowerCase().includes('ಯಾಕೆ') || msg.toLowerCase().includes('why') || msg.toLowerCase().includes('reason');
+
+      if (!isScientificExplanation) {
+        try {
+          const history = messages.map(m => ({ role: m.sender, text: m.text }));
+          const ctxStr = botRes.advisory ? JSON.stringify(botRes.advisory) : (botRes.text || null);
+          const llmResponse = await callGroq(history, msg, ctxStr, uiLang);
+          if (llmResponse) {
+            finalBotText = llmResponse;
+          }
+        } catch (err) {
+          console.warn('Groq LLM failed, falling back to rule engine text', err);
         }
-      } catch (err) {
-        console.warn('Groq LLM failed, falling back to rule engine text', err);
       }
 
       const botMsg: Message = {
@@ -419,6 +435,23 @@ export default function App() {
     setUserProfile(updatedUser);
     localStorage.setItem('holamaatu_user', JSON.stringify(updatedUser));
     await syncFarmerProfile(updatedUser);
+  };
+
+  const handleUpdateStage = (newStage: string) => {
+    const updatedUser = { ...userProfile, stage: newStage };
+    setUserProfile(updatedUser);
+    localStorage.setItem('holamaatu_user', JSON.stringify(updatedUser));
+    syncFarmerProfile(updatedUser);
+    setAppState(prev => ({ ...prev, stage: newStage }));
+  };
+
+  const handleUpdateSowingDate = (newDate: string) => {
+    const calc = calculateStageFromSowingDate(newDate);
+    const updatedUser = { ...userProfile, sowingDate: newDate, stage: calc.stageKey };
+    setUserProfile(updatedUser);
+    localStorage.setItem('holamaatu_user', JSON.stringify(updatedUser));
+    syncFarmerProfile(updatedUser);
+    setAppState(prev => ({ ...prev, stage: calc.stageKey }));
   };
 
   const handleAskFromHome = (query: string) => {
@@ -518,6 +551,8 @@ export default function App() {
               lang={uiLang}
               onNavigate={(tab) => setActiveTab(tab)}
               onAskTopic={handleAskFromHome}
+              onUpdateStage={handleUpdateStage}
+              onUpdateSowingDate={handleUpdateSowingDate}
               weatherData={weatherData}
             />
           )}

@@ -120,7 +120,7 @@ export async function callGroqNLU(utterance: string): Promise<any> {
     const lang = hasKannada ? 'kn' : 'en';
 
     // Fast deterministic intent extraction for standard chips & queries
-    if (raw.includes('ಏಕೆ') || raw.includes('ಯಾಕೆ') || raw === 'why' || raw.includes('why') || raw.includes('reason') || raw.includes('ಕಾರಣ')) {
+    if (raw.includes('ಏಕೆ') || raw.includes('ಯಾಕೆ') || raw === 'why' || raw.includes('why') || raw.includes('reason') || raw.includes('ಕಾರಣ') || raw.includes('ವಿವರಣೆ') || raw.includes('explain')) {
         return { intent: 'explain_why', intentConfidence: 1.0, lang, slots: {} };
     }
     if (raw.includes('ಮಳೆ') || raw.includes('what if') || raw.includes('rains') || raw.includes('rain')) {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { translations, type Lang } from '../translations';
+import { translations, type Lang, calculateStageFromSowingDate } from '../translations';
 import { fetchFarmerProfile } from '../supabase';
 
 export interface UserProfileData {
@@ -9,6 +9,7 @@ export interface UserProfileData {
   location: string;
   stage: string;
   soil: string;
+  sowingDate?: string;
   isLoggedIn: boolean;
 }
 
@@ -25,9 +26,18 @@ export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPagePro
   const [name, setName] = useState(user.name || '');
   const [phone, setPhone] = useState(user.phone || '');
   const [location, setLocation] = useState(user.location || 'Dharwad');
+  const [sowingDate, setSowingDate] = useState(user.sowingDate || '');
   const [stage, setStage] = useState(user.stage || 'Sowing');
   const [soil, setSoil] = useState(user.soil || 'Black Soil');
   const [isSearching, setIsSearching] = useState(false);
+
+  const handleSowingDateChange = (dateVal: string) => {
+    setSowingDate(dateVal);
+    if (dateVal) {
+      const calc = calculateStageFromSowingDate(dateVal);
+      setStage(calc.stageKey);
+    }
+  };
 
   const handlePhoneBlur = async () => {
     const clean = phone.trim();
@@ -38,6 +48,7 @@ export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPagePro
         if (existing) {
           if (existing.name) setName(existing.name);
           if (existing.location) setLocation(existing.location);
+          if (existing.sowingDate) setSowingDate(existing.sowingDate);
           if (existing.stage) setStage(existing.stage);
           if (existing.soil) setSoil(existing.soil);
         }
@@ -55,6 +66,7 @@ export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPagePro
       name: name.trim() || 'Farmer',
       phone: cleanPhone,
       location,
+      sowingDate,
       stage,
       soil,
       isLoggedIn: true,
@@ -109,6 +121,26 @@ export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPagePro
               <option value="Haveri">Haveri (ಹಾವೇರಿ)</option>
               <option value="Gadag">Gadag (ಗದಗ)</option>
             </select>
+          </div>
+
+          <div className="form-group">
+            <label>
+              <i className="ti ti-calendar" /> {t.sowingDateLabel}
+            </label>
+            <input
+              type="date"
+              value={sowingDate}
+              onChange={(e) => handleSowingDateChange(e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
+            />
+            {sowingDate && (
+              <div style={{ marginTop: '6px', fontSize: '12px', color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <i className="ti ti-sparkles" />
+                <span>
+                  {t.sowingCalcPrefix}: {calculateStageFromSowingDate(sowingDate).daysElapsed} {lang === 'kn' ? 'ದಿನಗಳು' : 'days'} ➔ {lang === 'kn' ? calculateStageFromSowingDate(sowingDate).labelKn : calculateStageFromSowingDate(sowingDate).labelEn}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="form-group">

@@ -5,7 +5,8 @@ import {
   localizeLocation,
   localizeStage,
   localizeSoil,
-  localizeWeatherCondition
+  localizeWeatherCondition,
+  calculateStageFromSowingDate
 } from '../translations';
 import type { UserProfileData } from './LoginPage';
 import type { WeatherData } from '../weather';
@@ -15,6 +16,8 @@ interface HomePageProps {
   lang: Lang;
   onNavigate: (tab: 'home' | 'chat' | 'profile' | 'login') => void;
   onAskTopic: (query: string) => void;
+  onUpdateStage?: (stage: string) => void;
+  onUpdateSowingDate?: (date: string) => void;
   weatherData: WeatherData | null;
 }
 
@@ -25,6 +28,7 @@ const CROP_STAGES = [
     kn: 'ಬಿತ್ತನೆ',
     rangeEn: '0-15d',
     rangeKn: '0-15 ದಿನ',
+    stageValue: 'Sowing',
     matches: ['sowing', 'seedling', '0-15', 'ಬಿತ್ತನೆ', 'ಸಸಿ']
   },
   {
@@ -33,6 +37,7 @@ const CROP_STAGES = [
     kn: 'ಬೆಳವಣಿಗೆ',
     rangeEn: '15-45d',
     rangeKn: '15-45 ದಿನ',
+    stageValue: '30 days',
     matches: ['vegetative', 'growth', '15-45', '30 days', 'v4', 'v6', 'ಬೆಳವಣಿಗೆ', '30']
   },
   {
@@ -41,7 +46,8 @@ const CROP_STAGES = [
     kn: 'ಹೂವು / ತೆನೆ',
     rangeEn: '45-65d',
     rangeKn: '45-65 ದಿನ',
-    matches: ['flowering', 'tasseling', 'silking', '45-65', 'ಹೂವು', 'ತೆನೆ']
+    stageValue: '45 days',
+    matches: ['flowering', 'tasseling', 'silking', '45-65', '45 days', 'ಹೂವು', 'ತೆನೆ']
   },
   {
     key: 'maturity',
@@ -49,7 +55,8 @@ const CROP_STAGES = [
     kn: 'ಕಾಳು / ಕೊಯ್ಲು',
     rangeEn: '65-90d+',
     rangeKn: '65-90+ ದಿನ',
-    matches: ['grain', 'filling', 'maturity', 'harvest', '65-90', 'ಕಾಳು', 'ಕೊಯ್ಲು']
+    stageValue: '60 days',
+    matches: ['grain', 'filling', 'maturity', 'harvest', '60 days', '65-90', 'ಕಾಳು', 'ಕೊಯ್ಲು']
   }
 ];
 
@@ -57,40 +64,34 @@ function getActiveStageIndex(stageStr?: string): number {
   if (!stageStr) return 0;
   const s = stageStr.toLowerCase().trim();
 
-  // Stage 0: Sowing / Seeding (0-15d)
+  // 1. Direct keywords
   if (s.includes('sow') || s.includes('seed') || s.includes('0-15') || s.includes('0 - 15') || s.includes('ಬಿತ್ತನೆ') || s.includes('ಸಸಿ')) {
     return 0;
   }
-
-  // Stage 2: Flowering / Tasseling (45-65d) - check 45 before 30/15-45
-  if (s.includes('flower') || s.includes('tassel') || s.includes('silk') || s.includes('45') || s.includes('50') || s.includes('55') || s.includes('vt') || s.includes('r1') || s.includes('ಹೂವು') || s.includes('ತೆನೆ')) {
+  if (s.includes('flower') || s.includes('tassel') || s.includes('silk') || s.includes('45') || s.includes('vt') || s.includes('r1') || s.includes('ಹೂವು') || s.includes('ತೆನೆ')) {
     return 2;
   }
-
-  // Stage 3: Grain Filling / Maturity (65-90d+)
-  if (s.includes('grain') || s.includes('fill') || s.includes('matur') || s.includes('harvest') || s.includes('60') || s.includes('65') || s.includes('70') || s.includes('80') || s.includes('90') || s.includes('ಕಾಳು') || s.includes('ಕೊಯ್ಲು')) {
+  if (s.includes('grain') || s.includes('fill') || s.includes('matur') || s.includes('harvest') || s.includes('60') || s.includes('70') || s.includes('80') || s.includes('90') || s.includes('ಕಾಳು') || s.includes('ಕೊಯ್ಲು')) {
     return 3;
   }
-
-  // Stage 1: Vegetative (15-45d)
   if (s.includes('veg') || s.includes('growth') || s.includes('30') || s.includes('v4') || s.includes('v6') || s.includes('v8') || s.includes('ಬೆಳವಣಿಗೆ') || s.includes('15-45')) {
     return 1;
   }
 
-  // Fallback: parse numeric days
+  // 2. Fallback: parse numeric days
   const match = s.match(/(\d+)/);
   if (match) {
     const days = parseInt(match[1], 10);
     if (days <= 15) return 0;
-    if (days <= 40) return 1;
-    if (days <= 60) return 2;
+    if (days <= 45) return 1;
+    if (days <= 65) return 2;
     return 3;
   }
 
   return 0;
 }
 
-export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: HomePageProps) {
+export function HomePage({ user, lang, onNavigate, onAskTopic, onUpdateStage, onUpdateSowingDate, weatherData }: HomePageProps) {
   const t = translations[lang];
   const rain72h = weatherData?.forecastRain72h ?? 0;
   const activeStageIdx = getActiveStageIndex(user.stage);
@@ -272,18 +273,59 @@ export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: Ho
               <span className="metric-label">{t.homeSoilType}</span>
               <span className="metric-value">🌱 {localizeSoil(user.soil, lang)}</span>
             </div>
+
+            {/* Farmer Sowing Date Input with Automatic Phase Calculation */}
+            <div className="crop-metric-item sowing-date-box" style={{ gridColumn: 'span 2' }}>
+              <div className="sowing-date-header">
+                <span className="metric-label">
+                  <i className="ti ti-calendar-event" /> {lang === 'kn' ? 'ಬಿತ್ತನೆ ದಿನಾಂಕ (ಹಂತ ಲೆಕ್ಕಹಾಕಲು)' : 'Date of Seed Sowing'}
+                </span>
+                {user.sowingDate && (
+                  <span className="sowing-days-badge">
+                    🌱 {calculateStageFromSowingDate(user.sowingDate).daysElapsed} {lang === 'kn' ? 'ದಿನಗಳು ಕಳೆದಿವೆ' : 'days elapsed'}
+                  </span>
+                )}
+              </div>
+              <div className="sowing-date-input-row">
+                <input
+                  type="date"
+                  className="home-sowing-date-input"
+                  value={user.sowingDate || ''}
+                  max={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => onUpdateSowingDate && onUpdateSowingDate(e.target.value)}
+                  title={lang === 'kn' ? 'ಬಿತ್ತನೆ ದಿನಾಂಕವನ್ನು ಆರಿಸಿ' : 'Select seed sowing date'}
+                />
+                <span className="sowing-helper-note">
+                  {lang === 'kn'
+                    ? '💡 ಬಿತ್ತನೆ ದಿನಾಂಕ ಆರಿಸಿದರೆ ಬೆಳೆ ಹಂತ ತಾನಾಗಿಯೇ ಲೆಕ್ಕಾಚಾರವಾಗುತ್ತದೆ.'
+                    : '💡 Sowing date automatically calculates the days elapsed & crop phase.'}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Dynamic Interactive Crop Timeline */}
           <div className="home-timeline">
             {CROP_STAGES.map((stageItem, idx) => {
+              const isCurrent = idx === activeStageIdx;
+              const isCompleted = idx < activeStageIdx;
               let stepClass = 'timeline-step';
-              if (idx < activeStageIdx) stepClass += ' completed';
-              else if (idx === activeStageIdx) stepClass += ' current';
+              if (isCurrent) stepClass += ' current';
+              else if (isCompleted) stepClass += ' completed';
 
               return (
-                <div key={stageItem.key} className={stepClass}>
-                  <span className="step-dot" />
+                <div
+                  key={stageItem.key}
+                  className={stepClass}
+                  onClick={() => onUpdateStage && onUpdateStage(stageItem.stageValue)}
+                  role="button"
+                  tabIndex={0}
+                  title={lang === 'kn' ? `ಕ್ಲಿಕ್ ಮಾಡಿ: ${stageItem.kn} ಹಂತಕ್ಕೆ ಬದಲಾಯಿಸಿ` : `Click to select ${stageItem.en} stage`}
+                >
+                  <span className="step-dot">
+                    {isCurrent && <span className="step-dot-pulse" />}
+                    {isCompleted && <span className="step-dot-check">✓</span>}
+                  </span>
                   <span className="step-label">
                     {lang === 'kn' ? stageItem.kn : stageItem.en}
                     <br />
