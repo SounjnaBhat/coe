@@ -22,8 +22,8 @@ interface LoginPageProps {
 export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPageProps) {
   const t = translations[lang];
 
-  const [name, setName] = useState(user.name || 'Ramesh Patil');
-  const [phone, setPhone] = useState(user.phone || '9876543210');
+  const [name, setName] = useState(user.name || '');
+  const [phone, setPhone] = useState(user.phone || '');
   const [location, setLocation] = useState(user.location || 'Dharwad');
   const [stage, setStage] = useState(user.stage || '30 days');
   const [soil, setSoil] = useState(user.soil || 'Black Soil');
@@ -49,10 +49,11 @@ export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPagePro
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const cleanPhone = phone.trim();
     onLogin({
-      farmerId: user.farmerId || `f_${Date.now()}`,
+      farmerId: user.farmerId || (cleanPhone ? `f_${cleanPhone}` : `f_${Date.now()}`),
       name: name.trim() || 'Farmer',
-      phone: phone.trim(),
+      phone: cleanPhone,
       location,
       stage,
       soil,

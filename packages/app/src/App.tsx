@@ -8,6 +8,7 @@ import './styles/base.css';
 import './styles/card.css';
 import './styles/app.css';
 
+import { HomePage } from './components/HomePage';
 import { AdvisoryCard } from './components/AdvisoryCard';
 import { ContextStrip } from './components/ContextStrip';
 import { TranscriptConfirm } from './components/TranscriptConfirm';
@@ -16,6 +17,15 @@ import { ProfilePage } from './components/ProfilePage';
 import { callGroq, callGroqNLU } from './llm';
 import { translations, type Lang } from './translations';
 import { syncFarmerProfile, fetchFarmerProfile, logChatMessage } from './supabase';
+import { Capacitor } from '@capacitor/core';
+
+function isMobileApp(): boolean {
+  if (typeof window === 'undefined') return false;
+  if (Capacitor.isNativePlatform()) return true;
+  if (window.matchMedia('(display-mode: standalone)').matches) return true;
+  if ((window.navigator as any).standalone) return true;
+  return false;
+}
 
 class GroqNLUPort implements NLUPort {
   async extractIntent(utterance: string): Promise<any> {
@@ -160,18 +170,36 @@ interface Message {
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'profile' | 'login'>('chat');
-  const [uiLang, setUiLang] = useState<Lang>('kn');
-
-  const [userProfile, setUserProfile] = useState<UserProfileData>({
-    farmerId: 'f_001',
-    name: 'Ramesh Patil',
-    phone: '9876543210',
-    location: 'Dharwad',
-    stage: '30 days',
-    soil: 'Black Soil',
-    isLoggedIn: true,
+  const [userProfile, setUserProfile] = useState<UserProfileData>(() => {
+    try {
+      const saved = localStorage.getItem('holamaatu_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') return parsed;
+      }
+    } catch {}
+    return {
+      farmerId: '',
+      name: '',
+      phone: '',
+      location: 'Dharwad',
+      stage: '30 days',
+      soil: 'Black Soil',
+      isLoggedIn: false,
+    };
   });
+
+  const [activeTab, setActiveTab] = useState<'home' | 'chat' | 'profile' | 'login'>(() => {
+    // In mobile app (Capacitor/PWA), open directly to Home page like other apps!
+    if (isMobileApp()) {
+      return 'home';
+    }
+    // On the website, all users are directed to the login page first!
+    return 'login';
+  });
+
+  const [uiLang, setUiLang] = useState<Lang>('kn');
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -185,14 +213,25 @@ export default function App() {
     turnIndex: 0,
     previousAdvisory: null as any,
     pendingIntent: undefined as string | undefined,
-    farmerId: 'f_001',
-    location: 'Dharwad' as string | undefined,
-    stage: '30 days' as string | undefined,
+    farmerId: userProfile.farmerId || 'f_guest',
+    location: userProfile.location || 'Dharwad',
+    stage: userProfile.stage || '30 days',
     weatherFeatures: { dToday: 60, forecastRain72h: 0 },
   });
 
   const speech = useSpeechRecognition();
   const t = translations[uiLang];
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     core.initialize().then(() => setIsReady(true));
@@ -332,13 +371,20 @@ export default function App() {
     setUserProfile(updatedUser);
     localStorage.setItem('holamaatu_user', JSON.stringify(updatedUser));
     await syncFarmerProfile(updatedUser);
-    setActiveTab('chat');
+    setActiveTab('home');
   };
 
   const handleUpdateProfile = async (updatedUser: UserProfileData) => {
     setUserProfile(updatedUser);
     localStorage.setItem('holamaatu_user', JSON.stringify(updatedUser));
     await syncFarmerProfile(updatedUser);
+  };
+
+  const handleAskFromHome = (query: string) => {
+    setActiveTab('chat');
+    setTimeout(() => {
+      handleSend(query);
+    }, 150);
   };
 
   const handleLogout = () => {
@@ -352,19 +398,29 @@ export default function App() {
     <div className="app-root">
       {/* ── App Header ── */}
       <header className="app-header">
-        <div className="brand-section" onClick={() => setActiveTab('chat')}>
+        <div className="brand-section" onClick={() => setActiveTab('home')}>
           <div className="brand-logo">🌾</div>
           <div>
             <div className="brand-title">{t.appTitle}</div>
             <div className="brand-subtitle">
-              <i className="ti ti-wifi-off" />
-              {isReady ? t.offlineStatus : t.loading}
+              <i
+                className={isOnline ? "ti ti-wifi" : "ti ti-wifi-off"}
+                style={{ color: isOnline ? '#4caf50' : '#ffa726', marginRight: '4px' }}
+              />
+              {isOnline ? (isReady ? t.subtitle : t.loading) : t.offlineStatus}
             </div>
           </div>
         </div>
 
         <div className="nav-controls">
           <div className="nav-tabs-desktop">
+            <button
+              className={`nav-tab-btn ${activeTab === 'home' ? 'active' : ''}`}
+              onClick={() => setActiveTab('home')}
+            >
+              <i className="ti ti-home" />
+              {t.navHome}
+            </button>
             <button
               className={`nav-tab-btn ${activeTab === 'chat' ? 'active' : ''}`}
               onClick={() => setActiveTab('chat')}
@@ -414,13 +470,27 @@ export default function App() {
       {/* ── App Body ── */}
       <div className="app-body">
         <div className="main-view-container">
+          {/* HOME VIEW */}
+          {activeTab === 'home' && (
+            <HomePage
+              user={userProfile}
+              lang={uiLang}
+              onNavigate={(tab) => setActiveTab(tab)}
+              onAskTopic={handleAskFromHome}
+              weatherFeatures={appState.weatherFeatures}
+            />
+          )}
+
           {/* LOGIN VIEW */}
           {activeTab === 'login' && (
             <LoginPage
               user={userProfile}
               lang={uiLang}
               onLogin={handleLoginSuccess}
-              onContinueGuest={() => setActiveTab('chat')}
+              onContinueGuest={() => {
+                setUserProfile(prev => ({ ...prev, isLoggedIn: false, name: prev.name || 'Guest Farmer' }));
+                setActiveTab('home');
+              }}
             />
           )}
 
@@ -660,6 +730,14 @@ export default function App() {
       {/* ── Mobile Navigation Bar ── */}
       <nav className="mobile-nav-bar">
         <button
+          className={`mobile-nav-item ${activeTab === 'home' ? 'active' : ''}`}
+          onClick={() => setActiveTab('home')}
+        >
+          <i className="ti ti-home" />
+          <span>{t.navHome}</span>
+        </button>
+
+        <button
           className={`mobile-nav-item ${activeTab === 'chat' ? 'active' : ''}`}
           onClick={() => setActiveTab('chat')}
         >
@@ -680,7 +758,7 @@ export default function App() {
           onClick={() => setActiveTab(userProfile.isLoggedIn ? 'profile' : 'login')}
         >
           <i className={userProfile.isLoggedIn ? 'ti ti-user-check' : 'ti ti-login'} />
-          <span>{userProfile.isLoggedIn ? userProfile.name.split(' ')[0] : t.navLogin}</span>
+          <span>{userProfile.isLoggedIn ? (userProfile.name ? userProfile.name.split(' ')[0] : 'Profile') : t.navLogin}</span>
         </button>
       </nav>
     </div>

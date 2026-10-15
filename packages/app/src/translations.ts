@@ -9,10 +9,34 @@ export const translations = {
     toggleLang: 'ಕನ್ನಡ',
     
     // Navigation
+    navHome: 'Home',
     navChat: 'Advisor Chat',
     navProfile: 'Profile',
     navLogin: 'Login',
     navLogout: 'Logout',
+
+    // Home Dashboard
+    homeGreeting: 'Namaskara',
+    homeSubtitle: 'Here is your maize crop advisory summary for today.',
+    homeCropStatusTitle: 'Crop & Soil Status',
+    homeCropStage: 'Current Stage',
+    homeSoilType: 'Soil Type',
+    homeWeatherTitle: 'Local Weather Forecast',
+    homeWeatherRain: 'Rain (Next 72h)',
+    homeWeatherNoRain: 'No rain expected',
+    homeWeatherRainExpected: 'Rain expected',
+    homeQuickActionsTitle: 'Quick Advisory Actions',
+    homeActionIrrigation: 'Water Management',
+    homeActionIrrigationDesc: 'Depletion check & watering schedule',
+    homeActionPest: 'Pest & Fall Armyworm',
+    homeActionPestDesc: 'Early symptoms & chemical dosage',
+    homeActionFertilizer: 'Fertilizer Dosing',
+    homeActionFertilizerDesc: 'Urea, DAP & micronutrient plan',
+    homeActionWeather: 'Weather & Sowing',
+    homeActionWeatherDesc: 'Precipitation forecast & soil prep',
+    homeAskCta: 'Ask Holamaatu Advisor',
+    homeAskCtaSub: 'Voice or text query in Kannada / English',
+    homeTipsTitle: 'Smart Agronomy Tips for Dharwad',
 
     // Login Page
     loginTitle: 'Welcome to Holamaatu',
@@ -67,10 +91,34 @@ export const translations = {
     toggleLang: 'EN',
     
     // Navigation
+    navHome: 'ಮುಖಪುಟ',
     navChat: 'ಸಲಹೆಗಾರ ಚಾಟ್',
     navProfile: 'ಪ್ರೊಫೈಲ್',
     navLogin: 'ಲಾಗಿನ್',
     navLogout: 'ಲಾಗೌಟ್',
+
+    // Home Dashboard
+    homeGreeting: 'ನಮಸ್ಕಾರ',
+    homeSubtitle: 'ಇಂದಿನ ನಿಮ್ಮ ಮೆಕ್ಕೆಜೋಳ ಕೃಷಿ ಸಲಹಾ ಸಾರಾಂಶ ಇಲ್ಲಿದೆ.',
+    homeCropStatusTitle: 'ಬೆಳೆ ಮತ್ತು ಮಣ್ಣಿನ ಸ್ಥಿತಿ',
+    homeCropStage: 'ಪ್ರಸ್ತುತ ಬೆಳೆ ಹಂತ',
+    homeSoilType: 'ಮಣ್ಣಿನ ವಿಧ',
+    homeWeatherTitle: 'ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ',
+    homeWeatherRain: 'ಮುಂದಿನ 72 ಗಂಟೆಗಳ ಮಳೆ',
+    homeWeatherNoRain: 'ಮಳೆಯ ಸಾಧ್ಯತೆ ಇಲ್ಲ',
+    homeWeatherRainExpected: 'ಮಳೆಯಾಗುವ ಸಾಧ್ಯತೆ ಇದೆ',
+    homeQuickActionsTitle: 'ತ್ವರಿತ ಕೃಷಿ ಸಲಹೆಗಳು',
+    homeActionIrrigation: 'ನೀರಾವರಿ ನಿರ್ವಹಣೆ',
+    homeActionIrrigationDesc: 'ಮಣ್ಣಿನ ತೇವಾಂಶ ಮತ್ತು ನೀರಿನ ಯೋಜನೆ',
+    homeActionPest: 'ಕೀಟ ಮತ್ತು ಲದ್ದಿ ಹುಳು',
+    homeActionPestDesc: 'ರೋಗ ಲಕ್ಷಣಗಳು ಮತ್ತು ಕೀಟನಾಶಕ ಪ್ರಮಾಣ',
+    homeActionFertilizer: 'ರಸಗೊಬ್ಬರ ಪ್ರಮಾಣ',
+    homeActionFertilizerDesc: 'ಯೂರಿಯಾ, ಡಿಎಪಿ ಮತ್ತು ಪೋಷಕಾಂಶಗಳ ವೇಳಾಪಟ್ಟಿ',
+    homeActionWeather: 'ಹವಾಮಾನ ಮತ್ತು ಬಿತ್ತನೆ',
+    homeActionWeatherDesc: 'ಮಳೆ ಮುನ್ಸೂಚನೆ ಮತ್ತು ಜಮೀನು ಸಿದ್ಧತೆ',
+    homeAskCta: 'ಹೊಲಮಾತು ಸಲಹೆಗಾರರನ್ನು ಕೇಳಿ',
+    homeAskCtaSub: 'ಕನ್ನಡ ಅಥವಾ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಧ್ವನಿ ಅಥವಾ ಪಠ್ಯ ಪ್ರಶ್ನೆ',
+    homeTipsTitle: 'ಧಾರವಾಡ ರೈತರಿಗೆ ಸ್ಮಾರ್ಟ್ ಕೃಷಿ ಸಲಹೆಗಳು',
 
     // Login Page
     loginTitle: 'ಹೊಲಮಾತು ಗೆ ಸುಸ್ವಾಗತ',
