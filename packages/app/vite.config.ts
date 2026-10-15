@@ -1,6 +1,26 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
+import fs from 'fs';
+
+function mirrorToRootDistPlugin() {
+  return {
+    name: 'mirror-to-root-dist',
+    closeBundle() {
+      try {
+        const src = path.resolve(__dirname, 'dist');
+        const dest = path.resolve(__dirname, '../../dist');
+        if (fs.existsSync(src)) {
+          fs.cpSync(src, dest, { recursive: true });
+          console.log('[vite] Successfully mirrored packages/app/dist to root dist for Vercel');
+        }
+      } catch (e) {
+        console.warn('[vite] Failed to mirror dist:', e);
+      }
+    }
+  };
+}
 
 export default defineConfig({
   plugins: [
@@ -27,6 +47,7 @@ export default defineConfig({
           }
         ]
       }
-    })
+    }),
+    mirrorToRootDistPlugin()
   ]
 });
