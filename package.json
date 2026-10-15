@@ -6,6 +6,7 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "npm run build --workspace=@advisor/app",
     "test": "vitest run",
     "lint": "eslint .",
     "ask": "npx tsx packages/app/src/cli.ts",

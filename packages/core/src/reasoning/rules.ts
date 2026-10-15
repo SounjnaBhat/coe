@@ -1,5 +1,3 @@
-// @ts-ignore
-import * as yaml from 'js-yaml';
 import { KNOWLEDGE } from '../knowledge_compiled';
 import { CropStage, calculatePhenology } from './phenology';
 import { updateWaterBalance, calculateHargreavesET0, calculateDrySpell, calculateHeatStress } from './features';
