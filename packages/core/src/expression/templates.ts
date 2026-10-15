@@ -121,6 +121,12 @@ export function translateText(text: string, lang: string): string {
     if (translated.includes('Scout first')) {
         return 'ಮೊದಲು ಹೊಲ ಪರಿಶೀಲಿಸಿ — ಸಿಂಪಡಿಸುವ ಮುನ್ನ ಸ್ಥಳೀಯ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರ (RSK) ಸಂಪರ್ಕಿಸಿ';
     }
+    if (translated.includes('nitrogen top-dressing') || translated.includes('PLACEHOLDER_UREA_DOSE')) {
+        return 'ಬೆಳವಣಿಗೆ ಹಂತದಲ್ಲಿ (30-40 ದಿನಗಳು) ಮೊದಲ ಸಾರಜನಕ (ಯೂರಿಯಾ) ಮೇಲುಗೊಬ್ಬರವನ್ನು ನೀಡಲು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.';
+    }
+    if (translated.includes('Nitrogen top-dressing is not recommended')) {
+        return 'ಈ ಹಂತದಲ್ಲಿ ಸಾರಜನಕ ಮೇಲುಗೊಬ್ಬರ ನೀಡುವುದು ಸೂಕ್ತವಲ್ಲ.';
+    }
     return translated;
 }
 

@@ -102,12 +102,12 @@ export async function callGroq(
     };
 
     try {
-        // Try high-capacity model first
-        return await requestWithModel('openai/gpt-oss-120b');
+        // Try high-capacity Llama-3.3 model first
+        return await requestWithModel('llama-3.3-70b-versatile');
     } catch (e1) {
-        console.warn('Groq 120b attempt failed, attempting fallback to 20b model:', e1);
+        console.warn('Groq 70b attempt failed, attempting fallback to 8b instant model:', e1);
         try {
-            return await requestWithModel('openai/gpt-oss-20b');
+            return await requestWithModel('llama-3.1-8b-instant');
         } catch (e2) {
             throw e2;
         }
@@ -115,6 +115,33 @@ export async function callGroq(
 }
 
 export async function callGroqNLU(utterance: string): Promise<any> {
+    const raw = utterance.trim().toLowerCase();
+    const hasKannada = /[\u0C80-\u0CFF]/.test(utterance);
+    const lang = hasKannada ? 'kn' : 'en';
+
+    // Fast deterministic intent extraction for standard chips & queries
+    if (raw.includes('ಏಕೆ') || raw.includes('ಯಾಕೆ') || raw === 'why' || raw.includes('why') || raw.includes('reason') || raw.includes('ಕಾರಣ')) {
+        return { intent: 'explain_why', intentConfidence: 1.0, lang, slots: {} };
+    }
+    if (raw.includes('ಮಳೆ') || raw.includes('what if') || raw.includes('rains') || raw.includes('rain')) {
+        return { intent: 'consequence', intentConfidence: 1.0, lang, slots: {} };
+    }
+    if (raw.includes('ಪರ್ಯಾಯ') || raw.includes('alternative') || raw.includes('ಬೇರೆ')) {
+        return { intent: 'alternative', intentConfidence: 1.0, lang, slots: {} };
+    }
+    if (raw.includes('ಖಂಡಿತ') || raw.includes('ಖಚಿತ') || raw.includes('sure') || raw.includes('challenge')) {
+        return { intent: 'challenge', intentConfidence: 1.0, lang, slots: {} };
+    }
+    if (raw.includes('ನೀರು') || raw.includes('ನೀರಾವರಿ') || raw.includes('irrigat') || raw.includes('water')) {
+        return { intent: 'irrigation_advice', intentConfidence: 0.95, lang, slots: {} };
+    }
+    if (raw.includes('ಕೀಟ') || raw.includes('ಹುಳು') || raw.includes('pest') || raw.includes('armyworm') || raw.includes('faw')) {
+        return { intent: 'pest_management', intentConfidence: 0.95, lang, slots: {} };
+    }
+    if (raw.includes('ಗೊಬ್ಬರ') || raw.includes('ಯೂರಿಯಾ') || raw.includes('fertiliz') || raw.includes('urea')) {
+        return { intent: 'fertilizer_dose', intentConfidence: 0.95, lang, slots: {} };
+    }
+
     const rawApiKey = getApiKey();
     if (!rawApiKey) return null;
 
@@ -139,7 +166,7 @@ Return ONLY valid JSON matching this schema:
 If there are no slots, leave the slots object empty.`;
 
     const body = {
-        model: 'openai/gpt-oss-20b',
+        model: 'llama-3.3-70b-versatile',
         messages: [
             { role: 'system', content: NLU_PROMPT },
             { role: 'user', content: utterance }

@@ -137,17 +137,19 @@ export class NLUInferenceEngine {
         const hasDomainIrrigation = txt.includes('irrigat') || txt.includes('water') || txt.includes('ನೀರು') || txt.includes('bisi') || txt.includes('neeru');
         const hasDomainPest = txt.includes('faw') || txt.includes('pest') || txt.includes('ಹುಳು') || txt.includes('armyworm') || txt.includes('fall army') || txt.includes('ಕೀಟ');
         const hasDomainFert = txt.includes('urea') || txt.includes('fertiliz') || txt.includes('ಗೊಬ್ಬರ') || txt.includes('ಯೂರಿಯಾ') || txt.includes('dose') || txt.includes('nutrient');
-        const hasExplainWhy = txt === 'why' || txt.includes('why should');
-        const hasChallenge = txt.includes('are you sure');
-        const hasConsequence = txt.includes('what if') || txt.includes('rains') || txt.includes('ಮಳೆ');
+        const hasExplainWhy = txt.includes('why') || txt.includes('ಏಕೆ') || txt.includes('ಯಾಕೆ') || txt.includes('reason') || txt.includes('ಕಾರಣ');
+        const hasAlternative = txt.includes('alternative') || txt.includes('ಪರ್ಯಾಯ') || txt.includes('ಬೇರೆ');
+        const hasChallenge = txt.includes('are you sure') || txt.includes('ಖಂಡಿತ') || txt.includes('ಖಚಿತ');
+        const hasConsequence = txt.includes('what if') || txt.includes('rains') || txt.includes('ಮಳೆ') || txt.includes('ಆದರೆ');
         
         const isInfoLocation = txt.includes('dharwad') || txt.includes('hubli') || txt.includes('belagavi') || txt.includes('belgaum') || txt.includes('haveri') || txt.includes('ಧಾರವಾಡ') || txt.includes('ಬೆಳಗಾವಿ');
         const isInfoSoil = txt.includes('red') || txt.includes('black') || txt.includes('ಕೆಂಪು') || txt.includes('ಕಪ್ಪು');
         const isInfoStage = txt.includes('days') || txt.includes('v4') || txt.includes('v6') || txt.includes('ದಿನ') || txt.match(/\d+/);
 
-        if (hasConsequence) intent = 'consequence';
-        else if (hasExplainWhy) intent = 'explain_why';
+        if (hasExplainWhy) intent = 'explain_why';
+        else if (hasAlternative) intent = 'alternative';
         else if (hasChallenge) intent = 'challenge';
+        else if (hasConsequence) intent = 'consequence';
         else if (hasDomainIrrigation) intent = 'irrigation_advice';
         else if (hasDomainPest) intent = 'pest_management';
         else if (hasDomainFert) intent = 'fertilizer_dose';

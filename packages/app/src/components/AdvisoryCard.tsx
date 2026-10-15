@@ -12,20 +12,26 @@ const ICON: Record<string, string> = {
 const ACTION_LINES_EN: Record<string, string> = {
   IRRIGATE: 'Irrigate your field today',
   APPLY: 'Apply treatment',
+  APPLY_FERTILIZER: 'Apply fertilizer',
   SOW: 'Ready for sowing',
   HARVEST: 'Ready for harvest',
   SCOUT: 'Scout your field',
   WAIT: 'No action needed right now',
+  SKIP: 'Skip this action',
+  HOLD: 'Hold or delay application',
   INFORM: 'Information provided',
 };
 
 const ACTION_LINES_KN: Record<string, string> = {
   IRRIGATE: 'ಇಂದು ನೀರು ಹಾಕಿ',
   APPLY: 'ಔಷಧಿ ಸಿಂಪಡಿಸಿ',
+  APPLY_FERTILIZER: 'ರಸಗೊಬ್ಬರ ಹಾಕಿ',
   SOW: 'ಬಿತ್ತನೆಗೆ ಸಿದ್ಧವಾಗಿದೆ',
   HARVEST: 'ಕೊಯ್ಲಿಗೆ ಸಿದ್ಧವಾಗಿದೆ',
   SCOUT: 'ಹೊಲವನ್ನು ಪರಿಶೀಲಿಸಿ',
   WAIT: 'ಈಗ ಯಾವುದೇ ಕ್ರಮ ಅಗತ್ಯವಿಲ್ಲ',
+  SKIP: 'ಈ ಕ್ರಮವನ್ನು ಬಿಟ್ಟುಬಿಡಿ',
+  HOLD: 'ಮುಂದೂಡಿ',
   INFORM: 'ಮಾಹಿತಿ ಒದಗಿಸಲಾಗಿದೆ',
 };
 
@@ -101,6 +107,12 @@ function translateCautionStr(c: string, lang: 'kn' | 'en'): string {
   }
   if (c.includes('Significant rainfall')) {
     return 'ಮುಂದಿನ 72 ಗಂಟೆಗಳಲ್ಲಿ ಗಮನಾರ್ಹ ಮಳೆ ನಿರೀಕ್ಷಿಸಲಾಗಿದೆ. ನೀರಾವರಿಯನ್ನು ಮುಂದೂಡಿ.';
+  }
+  if (c.includes('nitrogen top-dressing') || c.includes('PLACEHOLDER_UREA_DOSE')) {
+    return 'ಬೆಳವಣಿಗೆ ಹಂತದಲ್ಲಿ (30-40 ದಿನಗಳು) ಮೊದಲ ಸಾರಜನಕ (ಯೂರಿಯಾ) ಮೇಲುಗೊಬ್ಬರವನ್ನು ನೀಡಲು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.';
+  }
+  if (c.includes('Nitrogen top-dressing is not recommended')) {
+    return 'ಈ ಹಂತದಲ್ಲಿ ಸಾರಜನಕ ಮೇಲುಗೊಬ್ಬರ ನೀಡುವುದು ಸೂಕ್ತವಲ್ಲ.';
   }
   return c;
 }

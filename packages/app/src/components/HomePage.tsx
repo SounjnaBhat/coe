@@ -56,11 +56,37 @@ const CROP_STAGES = [
 function getActiveStageIndex(stageStr?: string): number {
   if (!stageStr) return 0;
   const s = stageStr.toLowerCase().trim();
-  for (let i = 0; i < CROP_STAGES.length; i++) {
-    if (CROP_STAGES[i].matches.some(m => s.includes(m.toLowerCase()))) {
-      return i;
-    }
+
+  // Stage 0: Sowing / Seeding (0-15d)
+  if (s.includes('sow') || s.includes('seed') || s.includes('0-15') || s.includes('0 - 15') || s.includes('ಬಿತ್ತನೆ') || s.includes('ಸಸಿ')) {
+    return 0;
   }
+
+  // Stage 2: Flowering / Tasseling (45-65d) - check 45 before 30/15-45
+  if (s.includes('flower') || s.includes('tassel') || s.includes('silk') || s.includes('45') || s.includes('50') || s.includes('55') || s.includes('vt') || s.includes('r1') || s.includes('ಹೂವು') || s.includes('ತೆನೆ')) {
+    return 2;
+  }
+
+  // Stage 3: Grain Filling / Maturity (65-90d+)
+  if (s.includes('grain') || s.includes('fill') || s.includes('matur') || s.includes('harvest') || s.includes('60') || s.includes('65') || s.includes('70') || s.includes('80') || s.includes('90') || s.includes('ಕಾಳು') || s.includes('ಕೊಯ್ಲು')) {
+    return 3;
+  }
+
+  // Stage 1: Vegetative (15-45d)
+  if (s.includes('veg') || s.includes('growth') || s.includes('30') || s.includes('v4') || s.includes('v6') || s.includes('v8') || s.includes('ಬೆಳವಣಿಗೆ') || s.includes('15-45')) {
+    return 1;
+  }
+
+  // Fallback: parse numeric days
+  const match = s.match(/(\d+)/);
+  if (match) {
+    const days = parseInt(match[1], 10);
+    if (days <= 15) return 0;
+    if (days <= 40) return 1;
+    if (days <= 60) return 2;
+    return 3;
+  }
+
   return 0;
 }
 
