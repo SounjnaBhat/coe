@@ -17,6 +17,7 @@ import { ProfilePage } from './components/ProfilePage';
 import { callGroq, callGroqNLU } from './llm';
 import { translations, type Lang } from './translations';
 import { syncFarmerProfile, fetchFarmerProfile, logChatMessage } from './supabase';
+import { fetchLiveWeather, type WeatherData } from './weather';
 import { Capacitor } from '@capacitor/core';
 
 function isMobileApp(): boolean {
@@ -175,7 +176,13 @@ export default function App() {
       const saved = localStorage.getItem('holamaatu_user');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') return parsed;
+        if (parsed && typeof parsed === 'object') {
+          if (parsed.farmerId === 'f_001' && parsed.phone === '9876543210') {
+            localStorage.removeItem('holamaatu_user');
+          } else {
+            return parsed;
+          }
+        }
       }
     } catch {}
     return {
@@ -200,6 +207,7 @@ export default function App() {
 
   const [uiLang, setUiLang] = useState<Lang>('kn');
   const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -221,6 +229,20 @@ export default function App() {
 
   const speech = useSpeechRecognition();
   const t = translations[uiLang];
+
+  // Fetch real-time WeatherAPI data using user's location
+  useEffect(() => {
+    fetchLiveWeather(userProfile.location || 'Dharwad').then(data => {
+      setWeatherData(data);
+      setAppState(prev => ({
+        ...prev,
+        weatherFeatures: {
+          ...prev.weatherFeatures,
+          forecastRain72h: data.forecastRain72h
+        }
+      }));
+    });
+  }, [userProfile.location]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -477,7 +499,7 @@ export default function App() {
               lang={uiLang}
               onNavigate={(tab) => setActiveTab(tab)}
               onAskTopic={handleAskFromHome}
-              weatherFeatures={appState.weatherFeatures}
+              weatherData={weatherData}
             />
           )}
 
@@ -540,22 +562,11 @@ export default function App() {
                 {messages.map((m, index) => (
                   <React.Fragment key={m.id}>
                     {m.sender === 'user' ? (
-                      <div
-                        style={{
-                          alignSelf: 'flex-end',
-                          background: 'var(--surface-sunk)',
-                          padding: '12px 16px',
-                          borderRadius: '16px 16px 0 16px',
-                          maxWidth: '85%',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
-                        }}
-                        lang={uiLang}
-                        data-lang={uiLang}
-                      >
+                      <div className="chat-msg-user" lang={uiLang} data-lang={uiLang}>
                         {m.text}
                       </div>
                     ) : (
-                      <div style={{ alignSelf: 'flex-start', width: '100%', maxWidth: '100%' }}>
+                      <div className="chat-msg-bot">
                         {index > 0 && messages[index - 1].sender === 'user' && messages[index - 1].isTranscript && (
                           <TranscriptConfirm
                             text={messages[index - 1].text}
@@ -565,18 +576,7 @@ export default function App() {
                         )}
 
                         {m.text && (
-                          <div
-                            style={{
-                              background: 'var(--surface-sunk)',
-                              padding: '12px 16px',
-                              borderRadius: '16px 16px 16px 0',
-                              maxWidth: '88%',
-                              marginBottom: m.advisory ? '12px' : '0',
-                              lineHeight: '1.6'
-                            }}
-                            lang={uiLang}
-                            data-lang={uiLang}
-                          >
+                          <div className="chat-bubble-bot" lang={uiLang} data-lang={uiLang}>
                             {parseMarkdown(m.text)}
                           </div>
                         )}
@@ -586,22 +586,9 @@ export default function App() {
                         )}
 
                         {m.followUps && m.followUps.length > 0 && (
-                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+                          <div className="chat-followup-chips">
                             {m.followUps.map((fu, i) => (
-                              <button
-                                key={i}
-                                onClick={() => handleSend(fu)}
-                                style={{
-                                  background: 'var(--surface-sunk)',
-                                  border: '1px solid var(--border)',
-                                  borderRadius: 'var(--radius-pill)',
-                                  padding: '8px 16px',
-                                  cursor: 'pointer',
-                                  fontFamily: 'inherit',
-                                  color: 'var(--text-secondary)',
-                                  fontSize: '13px'
-                                }}
-                              >
+                              <button key={i} onClick={() => handleSend(fu)} className="chip-btn">
                                 {fu}
                               </button>
                             ))}
@@ -623,23 +610,14 @@ export default function App() {
 
               {/* Chat Input */}
               <div className="chat-input-area">
-                <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <form className="chat-form" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
                   <input
                     ref={inputRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder={t.chatPlaceholder}
                     disabled={!isReady || isThinking}
-                    style={{
-                      flex: 1,
-                      padding: '12px 18px',
-                      borderRadius: 'var(--radius-pill)',
-                      border: '1px solid var(--border)',
-                      background: 'var(--surface-sunk)',
-                      fontSize: '15px',
-                      outline: 'none',
-                      color: 'var(--text-primary)'
-                    }}
+                    className="chat-input-field"
                   />
                   {speech.isSupported && (
                     <button
@@ -647,19 +625,7 @@ export default function App() {
                       onClick={handleMicToggle}
                       title={speech.isListening ? 'Stop mic' : 'Start voice input'}
                       aria-label="Voice Input"
-                      style={{
-                        width: '46px',
-                        height: '46px',
-                        borderRadius: '50%',
-                        background: speech.isListening ? 'var(--accent)' : 'var(--surface-sunk)',
-                        color: speech.isListening ? 'white' : 'var(--text-primary)',
-                        border: '1px solid var(--border)',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '20px'
-                      }}
+                      className={`btn-icon-circle ${speech.isListening ? 'mic-active' : ''}`}
                     >
                       {speech.isListening ? <i className="ti ti-player-stop" /> : <i className="ti ti-microphone" />}
                     </button>
@@ -668,19 +634,7 @@ export default function App() {
                     type="submit"
                     disabled={!input.trim() || !isReady || isThinking}
                     aria-label="Send Message"
-                    style={{
-                      width: '46px',
-                      height: '46px',
-                      borderRadius: '50%',
-                      background: input.trim() ? 'var(--accent)' : 'var(--surface-sunk)',
-                      color: input.trim() ? 'white' : 'var(--text-muted)',
-                      border: 'none',
-                      cursor: input.trim() ? 'pointer' : 'default',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '20px'
-                    }}
+                    className={`btn-icon-circle ${input.trim() ? 'send-active' : ''}`}
                   >
                     <i className="ti ti-send" />
                   </button>
@@ -693,31 +647,38 @@ export default function App() {
         {/* Desktop Sidebar Widget */}
         <aside className="desktop-sidebar">
           <div className="side-widget">
-            <h4><i className="ti ti-user-check" /> Active Profile</h4>
-            <p style={{ margin: '0 0 6px', fontWeight: 600 }}>{userProfile.name}</p>
+            <h4><i className="ti ti-user-check" style={{ color: '#059669' }} /> Active Profile</h4>
+            <p style={{ margin: '0 0 6px', fontWeight: 700 }}>{userProfile.name || (uiLang === 'kn' ? 'ಅತಿಥಿ ರೈತರು' : 'Farmer')}</p>
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
-              📍 {userProfile.location} • 🌽 {userProfile.stage}
+              📍 {weatherData?.location || userProfile.location || 'Dharwad'} • 🌽 {userProfile.stage}
             </p>
             <button
               onClick={() => setActiveTab('profile')}
-              style={{
-                marginTop: '10px',
-                width: '100%',
-                padding: '6px 12px',
-                fontSize: '12px',
-                borderRadius: '6px',
-                border: '1px solid var(--border)',
-                background: 'var(--surface-card)',
-                cursor: 'pointer',
-                color: 'var(--accent)'
-              }}
+              className="btn-secondary"
+              style={{ width: '100%', marginTop: '12px', padding: '8px 12px', fontSize: '12px' }}
             >
-              Edit Profile
+              {t.navProfile}
             </button>
           </div>
 
+          {weatherData && (
+            <div className="side-widget">
+              <h4><i className="ti ti-cloud-storm" style={{ color: '#0284c7' }} /> Live Weather ({weatherData.location})</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '8px 0' }}>
+                <img src={weatherData.conditionIcon} alt="" style={{ width: '42px', height: '42px' }} />
+                <div>
+                  <div style={{ fontSize: '22px', fontWeight: 800 }}>{weatherData.tempC}°C</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{weatherData.conditionText}</div>
+                </div>
+              </div>
+              <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                🌧️ 72h Rain: <strong>{weatherData.forecastRain72h} mm</strong> • 💧 {weatherData.humidity}% Humidity
+              </p>
+            </div>
+          )}
+
           <div className="side-widget">
-            <h4><i className="ti ti-bulb" /> Smart Tips for Dharwad</h4>
+            <h4><i className="ti ti-bulb-filled" style={{ color: '#f59e0b' }} /> {t.homeTipsTitle}</h4>
             <ul>
               <li>Check soil moisture before applying nitrogen fertilizer.</li>
               <li>Scout regularly for Fall Armyworm during vegetative stage.</li>
