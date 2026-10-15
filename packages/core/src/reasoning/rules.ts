@@ -123,7 +123,7 @@ export class RuleEngine {
             taw: taw,
             mad_p: mad_p,
             forecastRain72h: forecastRain72h,
-            pestObserved: frame.slots['pest']?.value as string,
+            pestObserved: frame.slots?.['pest']?.value as string,
             infestationLevel: 15 // Mock ETL — real value needs field scouting input
         };
 

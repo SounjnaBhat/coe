@@ -225,7 +225,13 @@ export default function App() {
     location: userProfile.location || 'Dharwad',
     stage: userProfile.stage || '30 days',
     weatherFeatures: { dToday: 60, forecastRain72h: 0 },
+    lang: 'kn' as Lang
   });
+
+  // Keep appState.lang in sync with uiLang
+  useEffect(() => {
+    setAppState(prev => ({ ...prev, lang: uiLang }));
+  }, [uiLang]);
 
   const speech = useSpeechRecognition();
   const t = translations[uiLang];
@@ -320,7 +326,7 @@ export default function App() {
     // Persist user interaction to Supabase asynchronously
     logChatMessage(userProfile.farmerId, 'user', msg);
 
-    const currentState = { ...appState, turnIndex: appState.turnIndex + 1 };
+    const currentState = { ...appState, turnIndex: appState.turnIndex + 1, lang: uiLang };
 
     try {
       const botRes = await core.processUtterance(msg, currentState);
@@ -328,19 +334,26 @@ export default function App() {
 
       let followUps = botRes.advisory?.suggestedFollowUps || [];
       if (!botRes.advisory && botRes.text) {
-        if (botRes.text.includes('Which district') || botRes.text.includes('stage')) {
-           followUps = ['Dharwad', 'Hubli', '30 days', 'Sowing'];
+        if (botRes.text.includes('Which district') || botRes.text.includes('stage') || botRes.text.includes('ಯಾವ ತಾಲೂಕು')) {
+           followUps = uiLang === 'kn' ? ['ಧಾರವಾಡ', 'ಹುಬ್ಬಳ್ಳಿ', '30 ದಿನಗಳು', 'ಬಿತ್ತನೆ ಹಂತ'] : ['Dharwad', 'Hubli', '30 days', 'Sowing'];
         } else {
-           followUps = ['Irrigation', 'Pest Control', 'Fertilizer'];
+           followUps = uiLang === 'kn' ? ['ನೀರಾವರಿ', 'ಕೀಟ ನಿಯಂತ್ರಣ', 'ರಸಗೊಬ್ಬರ ಪ್ರಮಾಣ'] : ['Irrigation', 'Pest Control', 'Fertilizer'];
         }
+      } else if (uiLang === 'kn' && followUps.length > 0) {
+        const knMap: Record<string, string> = {
+          'Why?': 'ಏಕೆ ಈ ಸಲಹೆ?',
+          'What if it rains?': 'ಮಳೆ ಬಂದರೆ ಏನು ಮಾಡಬೇಕು?',
+          'Alternative?': 'ಪರ್ಯಾಯ ಕ್ರಮ ಯಾವುದು?'
+        };
+        followUps = followUps.map(fu => knMap[fu] || fu);
       }
 
-      // Re-enable Groq LLM overriding the text response
+      // Re-enable Groq LLM overriding the text response with full translation support
       let finalBotText = botRes.text;
       try {
         const history = messages.map(m => ({ role: m.sender, text: m.text }));
         const ctxStr = botRes.advisory ? JSON.stringify(botRes.advisory) : (botRes.text || null);
-        const llmResponse = await callGroq(history, msg, ctxStr);
+        const llmResponse = await callGroq(history, msg, ctxStr, uiLang);
         if (llmResponse) {
           finalBotText = llmResponse;
         }

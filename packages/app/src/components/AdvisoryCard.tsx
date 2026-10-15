@@ -29,11 +29,54 @@ const ACTION_LINES_KN: Record<string, string> = {
   INFORM: 'ಮಾಹಿತಿ ಒದಗಿಸಲಾಗಿದೆ',
 };
 
+const FACT_LABELS_KN: Record<string, string> = {
+  'Location': 'ಸ್ಥಳ',
+  'Crop Stage': 'ಬೆಳೆಯ ಹಂತ',
+  'Depletion': 'ಮಣ್ಣಿನ ನೀರಿನ ಕೊರತೆ',
+  'MAD Threshold': 'ಸುರಕ್ಷಿತ ಮಿತಿ',
+  'Pest Name': 'ಕೀಟದ ಹೆಸರು',
+  'Treatment Threshold': 'ಹಾನಿಯ ಮಿತಿ',
+  'Recommended Agent': 'ಶಿಫಾರಸು ಮಾಡಿದ ಔಷಧಿ / ಕ್ರಮ',
+  'Location Risk': 'ಪ್ರದೇಶದ ಅಪಾಯ',
+  'Recommended Dose': 'ಶಿಫಾರಸು ಪ್ರಮಾಣ',
+};
+
+const FACT_VALUES_KN: Record<string, string> = {
+  'Fall Armyworm': 'ಲದ್ದಿ ಹುಳು (Fall Armyworm)',
+  'MODERATE': 'ಮಧ್ಯಮ',
+  'HIGH': 'ಹೆಚ್ಚು',
+  'LOW': 'ಕಡಿಮೆ',
+  'Scout first — consult RSK before spraying': 'ಮೊದಲು ಹೊಲ ಪರಿಶೀಲಿಸಿ — RSK ಸಂಪರ್ಕಿಸಿ',
+  'Dharwad': 'ಧಾರವಾಡ',
+  'DHARWAD': 'ಧಾರವಾಡ',
+  'Hubli': 'ಹುಬ್ಬಳ್ಳಿ',
+  'HUBLI': 'ಹುಬ್ಬಳ್ಳಿ',
+  'Belagavi': 'ಬೆಳಗಾವಿ',
+  'Haveri': 'ಹಾವೇರಿ',
+};
+
+const CATEGORIES_KN: Record<string, string> = {
+  'irrigation advice': 'ನೀರಾವರಿ ಸಲಹೆ',
+  'pest management': 'ಕೀಟ ನಿರ್ವಹಣೆ',
+  'fertilizer dose': 'ರಸಗೊಬ್ಬರ ಪ್ರಮಾಣ',
+};
+
+const CAUTION_KN: Record<string, string> = {
+  'Infestation is at or above the Economic Threshold Level (10%). Please scout and consult your local RSK. No chemical dose is provided here.':
+    'ಕೀಟದ ಹಾನಿ ಆರ್ಥಿಕ ಮಿತಿಯನ್ನು (10%) ತಲುಪಿದೆ. ದಯವಿಟ್ಟು ಹೊಲ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಸ್ಥಳೀಯ RSK ಸಂಪರ್ಕಿಸಿ.',
+  'Heavy rain forecasted (> 20mm in 72h). Hold or reduce irrigation.':
+    'ಮುಂದಿನ 72 ಗಂಟೆಗಳಲ್ಲಿ ಭಾರಿ ಮಳೆ ನಿರೀಕ್ಷಿಸಲಾಗಿದೆ (> 20 ಮಿ.ಮೀ). ನೀರಾವರಿಯನ್ನು ಮುಂದೂಡಿ.',
+  'Avoid spraying if rain is expected within 6 hours.':
+    'ಮುಂದಿನ 6 ಗಂಟೆಗಳಲ್ಲಿ ಮಳೆಯಾಗುವ ಮುನ್ಸೂಚನೆ ಇದ್ದರೆ ಸಿಂಪಡಿಸಬೇಡಿ.',
+};
+
 export function AdvisoryCard({ advisory, lang }: { advisory: any; lang: 'kn' | 'en' }) {
+  const isKn = lang === 'kn';
   const tier = tierFor(advisory);
   
-  const actionLine = advisory.actionLine || (lang === 'kn' ? ACTION_LINES_KN[advisory.headline] : ACTION_LINES_EN[advisory.headline]) || advisory.headline;
-  const category = advisory.categoryLabel || advisory.intent.replace(/_/g, ' ');
+  const actionLine = advisory.actionLine || (isKn ? ACTION_LINES_KN[advisory.headline] : ACTION_LINES_EN[advisory.headline]) || advisory.headline;
+  const rawCategory = advisory.categoryLabel || advisory.intent.replace(/_/g, ' ');
+  const category = isKn ? (CATEGORIES_KN[rawCategory.toLowerCase()] || rawCategory) : rawCategory;
 
   return (
     <article className="card" lang={lang} data-lang={lang}>
@@ -47,19 +90,26 @@ export function AdvisoryCard({ advisory, lang }: { advisory: any; lang: 'kn' | '
 
       {advisory.facts && advisory.facts.length > 0 && (
         <dl className="facts">
-          {advisory.facts.map(f => (
-            <div className="facts__row" key={f.label}>
-              <dt>{f.label}</dt>
-              <dd>{f.value}{f.unit ? ` ${f.unit}` : ''}</dd>
-            </div>
-          ))}
+          {advisory.facts.map((f: any) => {
+            const label = isKn ? (FACT_LABELS_KN[f.label] || f.label) : f.label;
+            const rawVal = String(f.value);
+            const value = isKn ? (FACT_VALUES_KN[rawVal] || rawVal) : rawVal;
+            return (
+              <div className="facts__row" key={f.label}>
+                <dt>{label}</dt>
+                <dd>{value}{f.unit ? ` ${f.unit}` : ''}</dd>
+              </div>
+            );
+          })}
         </dl>
       )}
 
       {advisory.cautions && advisory.cautions.length > 0 && (
         <div className="caution" role="note">
           <i className="ti ti-alert-triangle" aria-hidden="true" />
-          <span>{advisory.cautions.join(' ')}</span>
+          <span>
+            {advisory.cautions.map((c: string) => (isKn ? (CAUTION_KN[c] || c) : c)).join(' ')}
+          </span>
         </div>
       )}
 
