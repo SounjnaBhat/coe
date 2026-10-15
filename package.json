@@ -7,6 +7,9 @@
   ],
   "scripts": {
     "build": "npm run build --workspace=@advisor/app && node scripts/copy-dist.js",
+    "build:mobile": "npm run build && cd packages/app && npx cap sync android && cd android && gradlew.bat assembleDebug --no-daemon && copy .\\app\\build\\outputs\\apk\\debug\\app-debug.apk ..\\..\\..\\Holamaatu.apk",
+    "open:android": "cd packages/app && npx cap open android",
+    "install:phone": "adb install -r Holamaatu.apk",
     "test": "vitest run",
     "lint": "eslint .",
     "ask": "npx tsx packages/app/src/cli.ts",
