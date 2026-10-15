@@ -1,16 +1,16 @@
 import React from 'react';
+import { localizeLocation, localizeStage, type Lang } from '../translations';
 
-export function ContextStrip({ profile, lang }: { profile: any; lang: 'kn' | 'en' }) {
-  // Mock implementations for stageLabel and areaLabel based on existing profile data
-  const items = [
-    profile.crop || 'Maize', 
-    profile.stage ? `${profile.stage} days` : '',
-    profile.location || 'Dharwad',
-  ].filter(Boolean);
+export function ContextStrip({ profile, lang }: { profile: any; lang: Lang }) {
+  const crop = lang === 'kn' ? '🌽 ಮೆಕ್ಕೆಜೋಳ' : '🌽 Maize';
+  const stage = profile.stage ? localizeStage(profile.stage, lang) : '';
+  const location = profile.location ? `📍 ${localizeLocation(profile.location, lang)}` : '';
+
+  const items = [crop, stage, location].filter(Boolean);
   
   return (
-    <div className="strip" lang={lang} data-lang={lang}>
-      {items.map(t => <span key={t}>{t}</span>)}
+    <div className="context-strip" lang={lang} data-lang={lang}>
+      {items.map((t, idx) => <span key={idx}>{t}</span>)}
     </div>
   );
 }

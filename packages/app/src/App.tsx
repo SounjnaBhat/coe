@@ -15,7 +15,13 @@ import { TranscriptConfirm } from './components/TranscriptConfirm';
 import { LoginPage, type UserProfileData } from './components/LoginPage';
 import { ProfilePage } from './components/ProfilePage';
 import { callGroq, callGroqNLU } from './llm';
-import { translations, type Lang } from './translations';
+import {
+  translations,
+  type Lang,
+  localizeLocation,
+  localizeStage,
+  localizeWeatherCondition
+} from './translations';
 import { syncFarmerProfile, fetchFarmerProfile, logChatMessage } from './supabase';
 import { fetchLiveWeather, type WeatherData } from './weather';
 import { Capacitor } from '@capacitor/core';
@@ -660,10 +666,10 @@ export default function App() {
         {/* Desktop Sidebar Widget */}
         <aside className="desktop-sidebar">
           <div className="side-widget">
-            <h4><i className="ti ti-user-check" style={{ color: '#059669' }} /> Active Profile</h4>
+            <h4><i className="ti ti-user-check" style={{ color: '#059669' }} /> {t.sidebarProfileTitle}</h4>
             <p style={{ margin: '0 0 6px', fontWeight: 700 }}>{userProfile.name || (uiLang === 'kn' ? 'ಅತಿಥಿ ರೈತರು' : 'Farmer')}</p>
             <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)' }}>
-              📍 {weatherData?.location || userProfile.location || 'Dharwad'} • 🌽 {userProfile.stage}
+              📍 {localizeLocation(weatherData?.location || userProfile.location, uiLang)} • 🌽 {localizeStage(userProfile.stage, uiLang)}
             </p>
             <button
               onClick={() => setActiveTab('profile')}
@@ -676,16 +682,18 @@ export default function App() {
 
           {weatherData && (
             <div className="side-widget">
-              <h4><i className="ti ti-cloud-storm" style={{ color: '#0284c7' }} /> Live Weather ({weatherData.location})</h4>
+              <h4><i className="ti ti-cloud-storm" style={{ color: '#0284c7' }} /> {t.sidebarLiveWeather} ({localizeLocation(weatherData.location, uiLang)})</h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '8px 0' }}>
                 <img src={weatherData.conditionIcon} alt="" style={{ width: '42px', height: '42px' }} />
                 <div>
                   <div style={{ fontSize: '22px', fontWeight: 800 }}>{weatherData.tempC}°C</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{weatherData.conditionText}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                    {localizeWeatherCondition(weatherData.conditionText, uiLang)}
+                  </div>
                 </div>
               </div>
               <p style={{ margin: 0, fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                🌧️ 72h Rain: <strong>{weatherData.forecastRain72h} mm</strong> • 💧 {weatherData.humidity}% Humidity
+                🌧️ {t.sidebar72hRain}: <strong>{weatherData.forecastRain72h} mm</strong> • 💧 {weatherData.humidity}% {t.humidityLabel}
               </p>
             </div>
           )}
@@ -693,9 +701,9 @@ export default function App() {
           <div className="side-widget">
             <h4><i className="ti ti-bulb-filled" style={{ color: '#f59e0b' }} /> {t.homeTipsTitle}</h4>
             <ul>
-              <li>Check soil moisture before applying nitrogen fertilizer.</li>
-              <li>Scout regularly for Fall Armyworm during vegetative stage.</li>
-              <li>Ensure proper field drainage if heavy rainfall is forecasted.</li>
+              {t.sidebarTips.map((tip, i) => (
+                <li key={i}>{tip}</li>
+              ))}
             </ul>
           </div>
         </aside>

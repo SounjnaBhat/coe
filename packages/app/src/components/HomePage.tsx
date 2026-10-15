@@ -1,5 +1,12 @@
 import React from 'react';
-import { translations, type Lang } from '../translations';
+import {
+  translations,
+  type Lang,
+  localizeLocation,
+  localizeStage,
+  localizeSoil,
+  localizeWeatherCondition
+} from '../translations';
 import type { UserProfileData } from './LoginPage';
 import type { WeatherData } from '../weather';
 
@@ -11,9 +18,56 @@ interface HomePageProps {
   weatherData: WeatherData | null;
 }
 
+const CROP_STAGES = [
+  {
+    key: 'sowing',
+    en: 'Sowing',
+    kn: 'ಬಿತ್ತನೆ',
+    rangeEn: '0-15d',
+    rangeKn: '0-15 ದಿನ',
+    matches: ['sowing', 'seedling', '0-15', 'ಬಿತ್ತನೆ', 'ಸಸಿ']
+  },
+  {
+    key: 'vegetative',
+    en: 'Vegetative',
+    kn: 'ಬೆಳವಣಿಗೆ',
+    rangeEn: '15-45d',
+    rangeKn: '15-45 ದಿನ',
+    matches: ['vegetative', 'growth', '15-45', '30 days', 'v4', 'v6', 'ಬೆಳವಣಿಗೆ', '30']
+  },
+  {
+    key: 'flowering',
+    en: 'Flowering',
+    kn: 'ಹೂವು / ತೆನೆ',
+    rangeEn: '45-65d',
+    rangeKn: '45-65 ದಿನ',
+    matches: ['flowering', 'tasseling', 'silking', '45-65', 'ಹೂವು', 'ತೆನೆ']
+  },
+  {
+    key: 'maturity',
+    en: 'Maturity',
+    kn: 'ಕಾಳು / ಕೊಯ್ಲು',
+    rangeEn: '65-90d+',
+    rangeKn: '65-90+ ದಿನ',
+    matches: ['grain', 'filling', 'maturity', 'harvest', '65-90', 'ಕಾಳು', 'ಕೊಯ್ಲು']
+  }
+];
+
+function getActiveStageIndex(stageStr?: string): number {
+  if (!stageStr) return 0;
+  const s = stageStr.toLowerCase().trim();
+  for (let i = 0; i < CROP_STAGES.length; i++) {
+    if (CROP_STAGES[i].matches.some(m => s.includes(m.toLowerCase()))) {
+      return i;
+    }
+  }
+  return 0;
+}
+
 export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: HomePageProps) {
   const t = translations[lang];
   const rain72h = weatherData?.forecastRain72h ?? 0;
+  const activeStageIdx = getActiveStageIndex(user.stage);
 
   const quickActions = [
     {
@@ -61,18 +115,18 @@ export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: Ho
         <div className="home-banner-content">
           <div className="home-badge-row">
             <span className="home-location-pill">
-              <i className="ti ti-map-pin" /> {weatherData?.location || user.location || 'Dharwad'}
+              <i className="ti ti-map-pin" /> {localizeLocation(weatherData?.location || user.location, lang)}
             </span>
             <span className="home-stage-pill">
-              🌽 {user.stage || '30 days'}
+              🌽 {localizeStage(user.stage, lang)}
             </span>
             {user.soil && (
               <span className="home-soil-pill">
-                🌱 {user.soil}
+                🌱 {localizeSoil(user.soil, lang)}
               </span>
             )}
             <span className="home-live-pill">
-              <span className="live-dot" /> Live Weather Active
+              <span className="live-dot" /> {t.liveWeatherActive}
             </span>
           </div>
 
@@ -94,7 +148,7 @@ export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: Ho
             </div>
           </div>
           <div className="home-cta-btn">
-            <span>Ask</span>
+            <span>{lang === 'kn' ? 'ಕೇಳಿ' : 'Ask'}</span>
             <i className="ti ti-arrow-right" />
           </div>
         </div>
@@ -107,10 +161,10 @@ export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: Ho
           <div className="home-card-header">
             <h4>
               <i className="ti ti-cloud-storm" style={{ color: '#0284c7' }} />
-              {t.homeWeatherTitle} — {weatherData?.location || 'Dharwad'}
+              {t.homeWeatherTitle} — {localizeLocation(weatherData?.location || 'Dharwad', lang)}
             </h4>
             <span className={`home-status-badge ${rain72h > 5 ? 'rainy' : 'sunny'}`}>
-              {rain72h > 5 ? '🌧️ Rain Alert' : '☀️ Dry Conditions'}
+              {rain72h > 5 ? t.weatherRainAlert : t.weatherDryConditions}
             </span>
           </div>
 
@@ -125,18 +179,20 @@ export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: Ho
                   />
                   <div>
                     <div className="weather-current-temp">{weatherData.tempC}°C</div>
-                    <div className="weather-condition-desc">{weatherData.conditionText}</div>
+                    <div className="weather-condition-desc">
+                      {localizeWeatherCondition(weatherData.conditionText, lang)}
+                    </div>
                   </div>
                 </div>
 
                 <div className="weather-stats-column">
                   <div className="weather-stat-item">
                     <i className="ti ti-droplet" />
-                    <span>{weatherData.humidity}% Humidity</span>
+                    <span>{weatherData.humidity}% {t.humidityLabel}</span>
                   </div>
                   <div className="weather-stat-item">
                     <i className="ti ti-wind" />
-                    <span>{weatherData.windKph} km/h Wind</span>
+                    <span>{weatherData.windKph} km/h {t.windLabel}</span>
                   </div>
                   <div className="weather-stat-item rain-metric">
                     <i className="ti ti-cloud-rain" />
@@ -149,7 +205,9 @@ export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: Ho
               <div className="forecast-mini-grid">
                 {weatherData.forecastDays.map((fd, i) => (
                   <div key={i} className="forecast-mini-day">
-                    <span className="mini-day-title">{fd.date}</span>
+                    <span className="mini-day-title">
+                      {fd.date === 'Today' ? t.todayLabel : fd.date === 'Tomorrow' ? t.tomorrowLabel : fd.date}
+                    </span>
                     <img src={fd.conditionIcon} alt={fd.conditionText} className="mini-day-icon" />
                     <span className="mini-day-temp">{fd.maxTempC}° / {fd.minTempC}°</span>
                     <span className="mini-day-rain">🌧️ {fd.rainMm} mm</span>
@@ -165,7 +223,7 @@ export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: Ho
             </div>
           ) : (
             <div className="weather-loading-state">
-              <i className="ti ti-loader animate-spin" /> Loading live Dharwad weather...
+              <i className="ti ti-loader animate-spin" /> {lang === 'kn' ? 'ನೇರ ಹವಾಮಾನ ಮಾಹಿತಿ ಪಡೆಯಲಾಗುತ್ತಿದೆ...' : 'Loading live Dharwad weather...'}
             </div>
           )}
         </div>
@@ -175,38 +233,39 @@ export function HomePage({ user, lang, onNavigate, onAskTopic, weatherData }: Ho
           <div className="home-card-header">
             <h4><i className="ti ti-plant-2" style={{ color: '#059669' }} /> {t.homeCropStatusTitle}</h4>
             <span className="home-status-badge active-stage">
-              {user.stage || 'Vegetative (15-45d)'}
+              {localizeStage(user.stage, lang)}
             </span>
           </div>
 
           <div className="crop-details-summary">
             <div className="crop-metric-item">
               <span className="metric-label">{t.homeCropStage}</span>
-              <span className="metric-value">🌽 {user.stage || 'Vegetative'}</span>
+              <span className="metric-value">🌽 {localizeStage(user.stage, lang)}</span>
             </div>
             <div className="crop-metric-item">
               <span className="metric-label">{t.homeSoilType}</span>
-              <span className="metric-value">🌱 {user.soil || 'Black Soil'}</span>
+              <span className="metric-value">🌱 {localizeSoil(user.soil, lang)}</span>
             </div>
           </div>
 
+          {/* Dynamic Interactive Crop Timeline */}
           <div className="home-timeline">
-            <div className="timeline-step completed">
-              <span className="step-dot" />
-              <span className="step-label">Sowing<br/><small>0-15d</small></span>
-            </div>
-            <div className="timeline-step current">
-              <span className="step-dot" />
-              <span className="step-label">Vegetative<br/><small>15-45d</small></span>
-            </div>
-            <div className="timeline-step">
-              <span className="step-dot" />
-              <span className="step-label">Flowering<br/><small>45-65d</small></span>
-            </div>
-            <div className="timeline-step">
-              <span className="step-dot" />
-              <span className="step-label">Maturity<br/><small>65-90d+</small></span>
-            </div>
+            {CROP_STAGES.map((stageItem, idx) => {
+              let stepClass = 'timeline-step';
+              if (idx < activeStageIdx) stepClass += ' completed';
+              else if (idx === activeStageIdx) stepClass += ' current';
+
+              return (
+                <div key={stageItem.key} className={stepClass}>
+                  <span className="step-dot" />
+                  <span className="step-label">
+                    {lang === 'kn' ? stageItem.kn : stageItem.en}
+                    <br />
+                    <small>{lang === 'kn' ? stageItem.rangeKn : stageItem.rangeEn}</small>
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

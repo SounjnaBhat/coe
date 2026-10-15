@@ -102,11 +102,11 @@ export function ProfilePage({ user, lang, onUpdateProfile, onLogout, weatherFeat
           <div className="form-group">
             <label>{t.stageLabel}</label>
             <select value={stage} onChange={(e) => setStage(e.target.value)}>
-              <option value="Sowing">Sowing (0-15 days)</option>
-              <option value="30 days">Vegetative (30 days)</option>
-              <option value="45 days">Flowering (45 days)</option>
-              <option value="60 days">Grain Filling (60 days)</option>
-              <option value="Harvest">Harvest Stage</option>
+              <option value="Sowing">{lang === 'kn' ? 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನಗಳು)' : 'Sowing (0-15 days)'}</option>
+              <option value="30 days">{lang === 'kn' ? 'ಬೆಳವಣಿಗೆ ಹಂತ (30 ದಿನಗಳು)' : 'Vegetative (30 days)'}</option>
+              <option value="45 days">{lang === 'kn' ? 'ಹೂವು / ತೆನೆ ಹಂತ (45 ದಿನಗಳು)' : 'Flowering (45 days)'}</option>
+              <option value="60 days">{lang === 'kn' ? 'ಕಾಳು ತುಂಬುವ ಹಂತ (60 ದಿನಗಳು)' : 'Grain Filling (60 days)'}</option>
+              <option value="Harvest">{lang === 'kn' ? 'ಕೊಯ್ಲು ಹಂತ' : 'Harvest Stage'}</option>
             </select>
           </div>
 
@@ -122,17 +122,17 @@ export function ProfilePage({ user, lang, onUpdateProfile, onLogout, weatherFeat
           {/* Environmental / Weather overview */}
           <div className="weather-overview">
             <h4 className="section-title">
-              <i className="ti ti-cloud-sun" /> Environmental Parameters
+              <i className="ti ti-cloud-sun" /> {lang === 'kn' ? 'ಪರಿಸರ ಹಾಗೂ ಹವಾಮಾನ ನಿಯತಾಂಕಗಳು' : 'Environmental Parameters'}
             </h4>
             <div className="weather-grid">
               <div className="weather-item">
-                <span className="w-label">Rain Forecast 72h</span>
+                <span className="w-label">{lang === 'kn' ? 'ಮುಂದಿನ 72 ಗಂ ಮಳೆ ಮುನ್ಸೂಚನೆ' : 'Rain Forecast 72h'}</span>
                 <span className="w-value">
                   {weatherFeatures ? `${weatherFeatures.forecastRain72h} mm` : '0 mm'}
                 </span>
               </div>
               <div className="weather-item">
-                <span className="w-label">Soil Moisture Index</span>
+                <span className="w-label">{lang === 'kn' ? 'ಮಣ್ಣಿನ ತೇವಾಂಶ ಸೂಚ್ಯಂಕ' : 'Soil Moisture Index'}</span>
                 <span className="w-value">
                   {weatherFeatures ? `${weatherFeatures.dToday} %` : '60 %'}
                 </span>

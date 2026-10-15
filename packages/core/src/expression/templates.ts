@@ -46,9 +46,43 @@ export const LOCATION_TRANSLATIONS: Record<string, string> = {
     'Gadag': 'ಗದಗ',
 };
 
+export const STAGE_TRANSLATIONS: Record<string, string> = {
+    'sowing': 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನಗಳು)',
+    'seedling': 'ಬಿತ್ತನೆ / ಸಸಿ ಹಂತ (0-15 ದಿನಗಳು)',
+    'sowing / seedling (0-15 days)': 'ಬಿತ್ತನೆ / ಸಸಿ ಹಂತ (0-15 ದಿನಗಳು)',
+    'vegetative': 'ಬೆಳವಣಿಗೆ ಹಂತ (15-45 ದಿನಗಳು)',
+    'vegetative growth (15-45 days)': 'ಬೆಳವಣಿಗೆ ಹಂತ (15-45 ದಿನಗಳು)',
+    'flowering': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ (45-65 ದಿನಗಳು)',
+    'tasseling & flowering (45-65 days)': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ (45-65 ದಿನಗಳು)',
+    'grain filling': 'ಕಾಳು ತುಂಬುವ ಹಂತ (65-90+ ದಿನಗಳು)',
+    'grain filling & maturity (65-90+ days)': 'ಕಾಳು ತುಂಬುವ ಮತ್ತು ಕೊಯ್ಲು ಹಂತ (65-90+ ದಿನಗಳು)',
+    'maturity': 'ಕೊಯ್ಲು ಹಂತ (65-90+ ದಿನಗಳು)',
+    '30 days': '30 ದಿನಗಳು (ಬೆಳವಣಿಗೆ ಹಂತ)',
+    'v4': 'ಬೆಳವಣಿಗೆ ಹಂತ (V4)',
+    'v6': 'ಬೆಳವಣಿಗೆ ಹಂತ (V6)',
+};
+
 export const CAUTION_TRANSLATIONS: Record<string, string> = {
+    'Soil moisture is adequate and crop is not under stress. No irrigation needed.':
+        'ಮಣ್ಣಿನಲ್ಲಿ ಸಾಕಷ್ಟು ತೇವಾಂಶವಿದೆ ಮತ್ತು ಬೆಳೆಯು ನೀರಿನ ಕೊರತೆಯಲ್ಲಿಲ್ಲ. ಈಗ ನೀರುಣಿಸುವ ಅಗತ್ಯವಿಲ್ಲ.',
+    'Significant rainfall (>15mm) expected in the next 72 hours.':
+        'ಮುಂದಿನ 72 ಗಂಟೆಗಳಲ್ಲಿ ಗಮನಾರ್ಹ ಮಳೆ (>15 ಮಿ.ಮೀ) ನಿರೀಕ್ಷಿಸಲಾಗಿದೆ. ನೀರಾವರಿಯನ್ನು ಮುಂದೂಡಿ.',
+    'Crop is in a critical stage (flowering/yield formation) and soil moisture depletion exceeds critical threshold (40% TAW).':
+        'ಬೆಳೆಯು ಹೂವು/ಕಾಳು ಕಟ್ಟುವ ನಿರ್ಣಾಯಕ ಹಂತದಲ್ಲಿದೆ ಮತ್ತು ಮಣ್ಣಿನ ತೇವಾಂಶ ಕಡಿಮೆಯಾಗಿದೆ. ತಕ್ಷಣ ನೀರು ಒದಗಿಸಿ.',
+    'Soil moisture depletion exceeds standard Management Allowed Depletion (MAD).':
+        'ಮಣ್ಣಿನ ತೇವಾಂಶ ಕೊರತೆ ಸುರಕ್ಷಿತ ಮಿತಿಯನ್ನು (MAD) ಮೀರಿದೆ. ನೀರು ನೀಡುವುದು ಅಗತ್ಯ.',
     'Infestation is at or above the Economic Threshold Level (10%). Please scout and consult your local RSK. No chemical dose is provided here.':
         'ಕೀಟದ ಬಾಧೆಯು ಆರ್ಥಿಕ ಹಾನಿ ಮಿತಿಯನ್ನು (10%) ಮೀರಿದೆ. ದಯವಿಟ್ಟು ಹೊಲ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಸ್ಥಳೀಯ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರ (RSK) ಸಂಪರ್ಕಿಸಿ.',
+    'Infestation is below ETL. Continue monitoring the crop.':
+        'ಕೀಟದ ಬಾಧೆ ಆರ್ಥಿಕ ಮಿತಿಗಿಂತ ಕಡಿಮೆಯಿದೆ. ಹೊಲವನ್ನು ನಿಯಮಿತವಾಗಿ ಗಮನಿಸುತ್ತಿರಿ.',
+    'Rainfall has exceeded 25mm in the past/next 72 hours. Soil moisture is adequate for sowing.':
+        'ಕಳೆದ ಅಥವಾ ಮುಂದಿನ 72 ಗಂಟೆಗಳಲ್ಲಿ 25 ಮಿ.ಮೀ ಗಿಂತ ಹೆಚ್ಚು ಮಳೆಯಾಗಿದೆ. ಬಿತ್ತನೆಗೆ ಮಣ್ಣಿನ ತೇವಾಂಶ ಹದವಾಗಿದೆ.',
+    'Insufficient rainfall. Wait for a good soaking rain (>25mm) before sowing.':
+        'ಸಾಕಷ್ಟು ಮಳೆಯಾಗಿಲ್ಲ. ಬಿತ್ತನೆ ಮಾಡುವ ಮೊದಲು ಉತ್ತಮ ಹದ ಮಳೆಗಾಗಿ (>25 ಮಿ.ಮೀ) ಕಾಯಿರಿ.',
+    'First nitrogen top-dressing is recommended at the vegetative stage (30-40 days). Apply PLACEHOLDER_UREA_DOSE kg/ha Urea.':
+        'ಬೆಳವಣಿಗೆ ಹಂತದಲ್ಲಿ (30-40 ದಿನಗಳು) ಮೊದಲ ಸಾರಜನಕ ಮೇಲುಗೊಬ್ಬರವನ್ನು ನೀಡಲು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.',
+    'Nitrogen top-dressing is not recommended at this stage.':
+        'ಈ ಹಂತದಲ್ಲಿ ಸಾರಜನಕ ಮೇಲುಗೊಬ್ಬರ ನೀಡುವುದು ಸೂಕ್ತವಲ್ಲ.',
     'Heavy rain forecasted (> 20mm in 72h). Hold or reduce irrigation.':
         'ಮುಂದಿನ 72 ಗಂಟೆಗಳಲ್ಲಿ ಭಾರಿ ಮಳೆ ನಿರೀಕ್ಷಿಸಲಾಗಿದೆ (> 20 ಮಿ.ಮೀ). ನೀರಾವರಿಯನ್ನು ಮುಂದೂಡಿ.',
     'Avoid spraying if rain is expected within 6 hours.':
@@ -56,6 +90,16 @@ export const CAUTION_TRANSLATIONS: Record<string, string> = {
     'Wear protective gloves and mask during pesticide handling.':
         'ಕೀಟನಾಶಕ ಬಳಸುವಾಗ ರಕ್ಷಣಾತ್ಮಕ ಮುಖವಾಡ ಮತ್ತು ಕೈಗವಸುಗಳನ್ನು ಧರಿಸಿ.',
 };
+
+export function translateStage(stage: string, lang: string): string {
+    if (lang !== 'kn' || !stage) return stage;
+    const key = stage.toLowerCase().trim();
+    if (STAGE_TRANSLATIONS[key]) return STAGE_TRANSLATIONS[key];
+    for (const [k, v] of Object.entries(STAGE_TRANSLATIONS)) {
+        if (key.includes(k)) return v;
+    }
+    return stage;
+}
 
 export function translateText(text: string, lang: string): string {
     if (lang !== 'kn' || !text) return text;
@@ -67,12 +111,15 @@ export function translateText(text: string, lang: string): string {
     if (LOCATION_TRANSLATIONS[text]) return LOCATION_TRANSLATIONS[text];
 
     let translated = text;
-    // Common token replacements
+    // Partial substring replacements for any dynamic strings
+    if (translated.includes('Soil moisture is adequate') || translated.includes('No irrigation needed')) {
+        return 'ಮಣ್ಣಿನಲ್ಲಿ ಸಾಕಷ್ಟು ತೇವಾಂಶವಿದೆ ಮತ್ತು ಬೆಳೆಯು ನೀರಿನ ಕೊರತೆಯಲ್ಲಿಲ್ಲ. ಈಗ ನೀರುಣಿಸುವ ಅಗತ್ಯವಿಲ್ಲ.';
+    }
     if (translated.includes('Economic Threshold Level')) {
-        translated = 'ಕೀಟದ ಬಾಧೆ ಆರ್ಥಿಕ ಮಿತಿಯನ್ನು ಮೀರಿದೆ. ದಯವಿಟ್ಟು ಹೊಲ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಸ್ಥಳೀಯ RSK ಸಂಪರ್ಕಿಸಿ.';
+        return 'ಕೀಟದ ಬಾಧೆ ಆರ್ಥಿಕ ಮಿತಿಯನ್ನು ಮೀರಿದೆ. ದಯವಿಟ್ಟು ಹೊಲ ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಸ್ಥಳೀಯ RSK ಸಂಪರ್ಕಿಸಿ.';
     }
     if (translated.includes('Scout first')) {
-        translated = 'ಮೊದಲು ಹೊಲ ಪರಿಶೀಲಿಸಿ — ಸಿಂಪಡಿಸುವ ಮುನ್ನ ಸ್ಥಳೀಯ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರ (RSK) ಸಂಪರ್ಕಿಸಿ';
+        return 'ಮೊದಲು ಹೊಲ ಪರಿಶೀಲಿಸಿ — ಸಿಂಪಡಿಸುವ ಮುನ್ನ ಸ್ಥಳೀಯ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರ (RSK) ಸಂಪರ್ಕಿಸಿ';
     }
     return translated;
 }
@@ -88,10 +135,11 @@ const irrigationTemplatesEn = [
 
 const irrigationTemplatesKn = [
     (stage: string, depletion: string, action: string, location: string) => {
+        const stageKn = translateStage(stage, 'kn');
         if (action === 'WAIT') {
-            return `### ನೀರಾವರಿ ಪರಿಶೀಲನೆ — ${location}\n\n✅ **ಈಗ ನೀರು ಹಾಕುವ ಅಗತ್ಯವಿಲ್ಲ.**\n\n**ನಿಮ್ಮ ಹೊಲ:**\n- **ಬೆಳೆಯ ಹಂತ:** ${stage}\n- **ಮಣ್ಣಿನ ನೀರಿನ ಕೊರತೆ:** ${depletion}\n- **ಸುರಕ್ಷಿತ ಮಿತಿ (MAD):** 55 ಮಿ.ಮೀ\n\nಮಣ್ಣಿನಲ್ಲಿ ಸಾಕಷ್ಟು ತೇವಾಂಶವಿದೆ. 2–3 ದಿನಗಳ ನಂತರ ಅಥವಾ ಒಣ ಹವಾಮಾನ ಮುಂದುವರಿದರೆ ಮತ್ತೆ ಪರಿಶೀಲಿಸಿ.`;
+            return `### ನೀರಾವರಿ ಪರಿಶೀಲನೆ — ${location}\n\n✅ **ಈಗ ನೀರು ಹಾಕುವ ಅಗತ್ಯವಿಲ್ಲ.**\n\n**ನಿಮ್ಮ ಹೊಲ:**\n- **ಬೆಳೆಯ ಹಂತ:** ${stageKn}\n- **ಮಣ್ಣಿನ ನೀರಿನ ಕೊರತೆ:** ${depletion}\n- **ಸುರಕ್ಷಿತ ಮಿತಿ (MAD):** 55 ಮಿ.ಮೀ\n\nಮಣ್ಣಿನಲ್ಲಿ ಸಾಕಷ್ಟು ತೇವಾಂಶವಿದೆ. 2–3 ದಿನಗಳ ನಂತರ ಅಥವಾ ಒಣ ಹವಾಮಾನ ಮುಂದುವರಿದರೆ ಮತ್ತೆ ಪರಿಶೀಲಿಸಿ.`;
         }
-        return `### ನೀರಾವರಿ ಅಗತ್ಯ — ${location}\n\n⚠️ **ಇಂದು ನಿಮ್ಮ ಹೊಲಕ್ಕೆ ನೀರು ಹಾಕಿ.**\n\n**ನಿಮ್ಮ ಹೊಲ:**\n- **ಬೆಳೆಯ ಹಂತ:** ${stage}\n- **ಮಣ್ಣಿನ ನೀರಿನ ಕೊರತೆ:** ${depletion}\n- **ಸುರಕ್ಷಿತ ಮಿತಿ (MAD):** 55 ಮಿ.ಮೀ\n\nಮಣ್ಣಿನ ತೇವಾಂಶ ಸುರಕ್ಷಿತ ಮಟ್ಟಕ್ಕಿಂತ ಕಡಿಮೆಯಾಗಿದೆ. ಬೆಳೆಯ ಬೆಳವಣಿಗೆಗೆ **${depletion}** ನೀರನ್ನು ಒದಗಿಸಿ.`;
+        return `### ನೀರಾವರಿ ಅಗತ್ಯ — ${location}\n\n⚠️ **ಇಂದು ನಿಮ್ಮ ಹೊಲಕ್ಕೆ ನೀರು ಹಾಕಿ.**\n\n**ನಿಮ್ಮ ಹೊಲ:**\n- **ಬೆಳೆಯ ಹಂತ:** ${stageKn}\n- **ಮಣ್ಣಿನ ನೀರಿನ ಕೊರತೆ:** ${depletion}\n- **ಸುರಕ್ಷಿತ ಮಿತಿ (MAD):** 55 ಮಿ.ಮೀ\n\nಮಣ್ಣಿನ ತೇವಾಂಶ ಸುರಕ್ಷಿತ ಮಟ್ಟಕ್ಕಿಂತ ಕಡಿಮೆಯಾಗಿದೆ. ಬೆಳೆಯ ಬೆಳವಣಿಗೆಗೆ **${depletion}** ನೀರನ್ನು ಒದಗಿಸಿ.`;
     }
 ];
 
@@ -123,8 +171,14 @@ const fertilizerTemplatesEn = [
 ];
 
 const fertilizerTemplatesKn = [
-    (stage: string, dose: string, location: string) => `### ರಸಗೊಬ್ಬರ ಸಲಹೆ (${location})\n\n**ಬೆಳೆಯ ಹಂತ:** ${stage}\n\n**ಶಿಫಾರಸು:**\n**${dose}** ಯೂರಿಯಾ ಬಳಸಿ. ಈ ಪ್ರಮಾಣವನ್ನು ${location} ಮಣ್ಣಿಗೆ ಮತ್ತು ಬೆಳವಣಿಗೆಯ ಹಂತಕ್ಕೆ ನಿಖರವಾಗಿ ಲೆಕ್ಕಹಾಕಲಾಗಿದೆ.`,
-    (stage: string, dose: string, location: string) => `### ಪೋಷಕಾಂಶ ನಿರ್ವಹಣೆ\n\n**ಸ್ಥಳ:** ${location}\n**ಹಂತ:** ${stage}\n\n**ಕ್ರಮ:**\n**${dose}** ಯೂರಿಯಾ ಮೇಲುಗೊಬ್ಬರವಾಗಿ ನೀಡಲು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.`
+    (stage: string, dose: string, location: string) => {
+        const stageKn = translateStage(stage, 'kn');
+        return `### ರಸಗೊಬ್ಬರ ಸಲಹೆ (${location})\n\n**ಬೆಳೆಯ ಹಂತ:** ${stageKn}\n\n**ಶಿಫಾರಸು:**\n**${dose}** ಯೂರಿಯಾ ಬಳಸಿ. ಈ ಪ್ರಮಾಣವನ್ನು ${location} ಮಣ್ಣಿಗೆ ಮತ್ತು ಬೆಳವಣಿಗೆಯ ಹಂತಕ್ಕೆ ನಿಖರವಾಗಿ ಲೆಕ್ಕಹಾಕಲಾಗಿದೆ.`;
+    },
+    (stage: string, dose: string, location: string) => {
+        const stageKn = translateStage(stage, 'kn');
+        return `### ಪೋಷಕಾಂಶ ನಿರ್ವಹಣೆ\n\n**ಸ್ಥಳ:** ${location}\n**ಹಂತ:** ${stageKn}\n\n**ಕ್ರಮ:**\n**${dose}** ಯೂರಿಯಾ ಮೇಲುಗೊಬ್ಬರವಾಗಿ ನೀಡಲು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.`;
+    }
 ];
 
 export function renderAdvisoryTemplate(advisory: Advisory, sessionId: string, turnIndex: number, stage: string, lang: string = 'en'): string {
@@ -178,10 +232,11 @@ export function renderAdvisoryTemplate(advisory: Advisory, sessionId: string, tu
     if (advisory.intent === 'fertilizer_dose') {
         const doseFact = advisory.facts.find(f => f.label === 'Recommended Dose');
         const dose = doseFact ? String(doseFact.value) : '0 kg/acre';
+        const stageKn = translateStage(stage, 'kn');
         
         if (advisory.headline === 'WAIT') {
             return isKn 
-                ? `### ರಸಗೊಬ್ಬರ ಸಲಹೆ (${location})\n\n**ಶಿಫಾರಸು:** ಕಾಯಿರಿ. ${stage} ಹಂತದಲ್ಲಿ ಗೊಬ್ಬರ ಕೊಡುವುದು ಸೂಕ್ತವಲ್ಲ.\n\n*ಸೂಚನೆ: ${translateText(advisory.cautions[0], 'kn')}*` 
+                ? `### ರಸಗೊಬ್ಬರ ಸಲಹೆ (${location})\n\n**ಶಿಫಾರಸು:** ಕಾಯಿರಿ. ${stageKn} ಹಂತದಲ್ಲಿ ಗೊಬ್ಬರ ಕೊಡುವುದು ಸೂಕ್ತವಲ್ಲ.\n\n*ಸೂಚನೆ: ${translateText(advisory.cautions[0], 'kn')}*` 
                 : `### Fertilizer Advisory (${location})\n\n**Recommendation:** WAIT. Top-dressing is not recommended at the ${stage} stage.\n\n*Note: ${advisory.cautions[0]}*`;
         }
 

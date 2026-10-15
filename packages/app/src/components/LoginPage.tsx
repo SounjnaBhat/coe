@@ -116,11 +116,11 @@ export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPagePro
               <i className="ti ti-plant" /> {t.stageLabel}
             </label>
             <select value={stage} onChange={(e) => setStage(e.target.value)}>
-              <option value="Sowing">Sowing (0-15 days)</option>
-              <option value="30 days">Vegetative (30 days)</option>
-              <option value="45 days">Flowering (45 days)</option>
-              <option value="60 days">Grain Filling (60 days)</option>
-              <option value="Harvest">Harvest Stage</option>
+              <option value="Sowing">{lang === 'kn' ? 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನಗಳು)' : 'Sowing (0-15 days)'}</option>
+              <option value="30 days">{lang === 'kn' ? 'ಬೆಳವಣಿಗೆ ಹಂತ (30 ದಿನಗಳು)' : 'Vegetative (30 days)'}</option>
+              <option value="45 days">{lang === 'kn' ? 'ಹೂವು / ತೆನೆ ಹಂತ (45 ದಿನಗಳು)' : 'Flowering (45 days)'}</option>
+              <option value="60 days">{lang === 'kn' ? 'ಕಾಳು ತುಂಬುವ ಹಂತ (60 ದಿನಗಳು)' : 'Grain Filling (60 days)'}</option>
+              <option value="Harvest">{lang === 'kn' ? 'ಕೊಯ್ಲು ಹಂತ' : 'Harvest Stage'}</option>
             </select>
           </div>
 
@@ -141,7 +141,7 @@ export function LoginPage({ user, lang, onLogin, onContinueGuest }: LoginPagePro
         </form>
 
         <div className="login-divider">
-          <span>OR</span>
+          <span>{lang === 'kn' ? 'ಅಥವಾ' : 'OR'}</span>
         </div>
 
         <button type="button" onClick={onContinueGuest} className="btn btn-secondary">

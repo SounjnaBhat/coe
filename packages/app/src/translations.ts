@@ -25,6 +25,14 @@ export const translations = {
     homeWeatherRain: 'Rain (Next 72h)',
     homeWeatherNoRain: 'No rain expected',
     homeWeatherRainExpected: 'Rain expected',
+    liveWeatherActive: 'Live Weather Active',
+    weatherRainAlert: '🌧️ Rain Alert',
+    weatherDryConditions: '☀️ Dry Conditions',
+    humidityLabel: 'Humidity',
+    windLabel: 'Wind',
+    todayLabel: 'Today',
+    tomorrowLabel: 'Tomorrow',
+
     homeQuickActionsTitle: 'Quick Advisory Actions',
     homeActionIrrigation: 'Water Management',
     homeActionIrrigationDesc: 'Depletion check & watering schedule',
@@ -37,6 +45,16 @@ export const translations = {
     homeAskCta: 'Ask Holamaatu Advisor',
     homeAskCtaSub: 'Voice or text query in Kannada / English',
     homeTipsTitle: 'Smart Agronomy Tips for Dharwad',
+
+    // Sidebar
+    sidebarProfileTitle: 'Active Profile',
+    sidebarLiveWeather: 'Live Weather',
+    sidebar72hRain: '72h Rain',
+    sidebarTips: [
+      'Check soil moisture before applying nitrogen fertilizer.',
+      'Scout regularly for Fall Armyworm during vegetative stage.',
+      'Ensure proper field drainage if heavy rainfall is forecasted.'
+    ],
 
     // Login Page
     loginTitle: 'Welcome to Holamaatu',
@@ -107,6 +125,14 @@ export const translations = {
     homeWeatherRain: 'ಮುಂದಿನ 72 ಗಂಟೆಗಳ ಮಳೆ',
     homeWeatherNoRain: 'ಮಳೆಯ ಸಾಧ್ಯತೆ ಇಲ್ಲ',
     homeWeatherRainExpected: 'ಮಳೆಯಾಗುವ ಸಾಧ್ಯತೆ ಇದೆ',
+    liveWeatherActive: 'ನೇರ ಹವಾಮಾನ ಸಕ್ರಿಯವಾಗಿದೆ',
+    weatherRainAlert: '🌧️ ಮಳೆ ಮುನ್ಸೂಚನೆ',
+    weatherDryConditions: '☀️ ಒಣ ಹವಾಮಾನ',
+    humidityLabel: 'ತೇವಾಂಶ',
+    windLabel: 'ಗಾಳಿ',
+    todayLabel: 'ಇಂದು',
+    tomorrowLabel: 'ನಾಳೆ',
+
     homeQuickActionsTitle: 'ತ್ವರಿತ ಕೃಷಿ ಸಲಹೆಗಳು',
     homeActionIrrigation: 'ನೀರಾವರಿ ನಿರ್ವಹಣೆ',
     homeActionIrrigationDesc: 'ಮಣ್ಣಿನ ತೇವಾಂಶ ಮತ್ತು ನೀರಿನ ಯೋಜನೆ',
@@ -119,6 +145,16 @@ export const translations = {
     homeAskCta: 'ಹೊಲಮಾತು ಸಲಹೆಗಾರರನ್ನು ಕೇಳಿ',
     homeAskCtaSub: 'ಕನ್ನಡ ಅಥವಾ ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ಧ್ವನಿ ಅಥವಾ ಪಠ್ಯ ಪ್ರಶ್ನೆ',
     homeTipsTitle: 'ಧಾರವಾಡ ರೈತರಿಗೆ ಸ್ಮಾರ್ಟ್ ಕೃಷಿ ಸಲಹೆಗಳು',
+
+    // Sidebar
+    sidebarProfileTitle: 'ಸಕ್ರಿಯ ಪ್ರೊಫೈಲ್',
+    sidebarLiveWeather: 'ನೇರ ಹವಾಮಾನ',
+    sidebar72hRain: 'ಮುಂದಿನ 72 ಗಂ ಮಳೆ',
+    sidebarTips: [
+      'ಸಾರಜನಕ (ಯೂರಿಯಾ) ಗೊಬ್ಬರ ಹಾಕುವ ಮೊದಲು ಮಣ್ಣಿನ ತೇವಾಂಶವನ್ನು ಪರೀಕ್ಷಿಸಿ.',
+      'ಬೆಳವಣಿಗೆಯ ಹಂತದಲ್ಲಿ ಲದ್ದಿ ಹುಳು (Fall Armyworm) ಕೀಟದ ಬಾಧೆಯನ್ನು ನಿಯಮಿತವಾಗಿ ಪರಿಶೀಲಿಸಿ.',
+      'ಭಾರಿ ಮಳೆಯ ಮುನ್ಸೂಚನೆ ಇದ್ದರೆ ಹೊಲದಲ್ಲಿ ಸರಿಯಾದ ನೀರು ಬಸಿದುಹೋಗುವ ಕಾಲುವೆಗಳನ್ನು ಮಾಡಿ.'
+    ],
 
     // Login Page
     loginTitle: 'ಹೊಲಮಾತು ಗೆ ಸುಸ್ವಾಗತ',
@@ -166,3 +202,97 @@ export const translations = {
     soils: ['Black Soil (ಕಪ್ಪು ಮಣ್ಣು)', 'Red Soil (ಕೆಂಪು ಮಣ್ಣು)', 'Loamy Soil (ಎರಡುಮಣ್ಣು)'],
   }
 };
+
+// ── Global Localization Helper Functions ──
+
+export const LOCATION_MAP: Record<string, string> = {
+  'dharwad': 'ಧಾರವಾಡ',
+  'hubli': 'ಹುಬ್ಬಳ್ಳಿ',
+  'belagavi': 'ಬೆಳಗಾವಿ',
+  'belgaum': 'ಬೆಳಗಾವಿ',
+  'haveri': 'ಹಾವೇರಿ',
+  'gadag': 'ಗದಗ',
+};
+
+export function localizeLocation(location?: string, lang: Lang = 'en'): string {
+  if (!location) return lang === 'kn' ? 'ಧಾರವಾಡ' : 'Dharwad';
+  if (lang !== 'kn') return location.replace(/\(.*\)/g, '').trim();
+  const cleaned = location.replace(/\(.*\)/g, '').trim().toLowerCase();
+  return LOCATION_MAP[cleaned] || location;
+}
+
+export const STAGE_MAP: Record<string, string> = {
+  'sowing': 'ಬಿತ್ತನೆ ಹಂತ',
+  'sowing / seedling (0-15 days)': 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನ)',
+  'seedling': 'ಸಸಿ ಹಂತ',
+  'vegetative': 'ಬೆಳವಣಿಗೆ ಹಂತ',
+  'vegetative growth (15-45 days)': 'ಬೆಳವಣಿಗೆ ಹಂತ (15-45 ದಿನ)',
+  '30 days': '30 ದಿನಗಳು (ಬೆಳವಣಿಗೆ ಹಂತ)',
+  'flowering': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ',
+  'tasseling & flowering (45-65 days)': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ (45-65 ದಿನ)',
+  'grain filling': 'ಕಾಳು ತುಂಬುವ ಹಂತ',
+  'grain filling & maturity (65-90+ days)': 'ಕಾಳು ತುಂಬುವ / ಕೊಯ್ಲು ಹಂತ',
+  'maturity': 'ಕೊಯ್ಲು ಹಂತ',
+};
+
+export function localizeStage(stage?: string, lang: Lang = 'en'): string {
+  if (!stage) return lang === 'kn' ? 'ಬೆಳವಣಿಗೆ ಹಂತ' : 'Vegetative';
+  if (lang !== 'kn') return stage.replace(/\(.*\)/g, '').trim();
+  const cleaned = stage.toLowerCase().trim();
+  if (STAGE_MAP[cleaned]) return STAGE_MAP[cleaned];
+  for (const [k, v] of Object.entries(STAGE_MAP)) {
+    if (cleaned.includes(k)) return v;
+  }
+  return stage;
+}
+
+export const SOIL_MAP: Record<string, string> = {
+  'black soil': 'ಕಪ್ಪು ಮಣ್ಣು',
+  'black': 'ಕಪ್ಪು ಮಣ್ಣು',
+  'red soil': 'ಕೆಂಪು ಮಣ್ಣು',
+  'red': 'ಕೆಂಪು ಮಣ್ಣು',
+  'loamy soil': 'ಎರಡುಮಣ್ಣು',
+  'loamy': 'ಎರಡುಮಣ್ಣು',
+};
+
+export function localizeSoil(soil?: string, lang: Lang = 'en'): string {
+  if (!soil) return lang === 'kn' ? 'ಕಪ್ಪು ಮಣ್ಣು' : 'Black Soil';
+  if (lang !== 'kn') return soil.replace(/\(.*\)/g, '').trim();
+  const cleaned = soil.toLowerCase().trim();
+  if (SOIL_MAP[cleaned]) return SOIL_MAP[cleaned];
+  for (const [k, v] of Object.entries(SOIL_MAP)) {
+    if (cleaned.includes(k)) return v;
+  }
+  return soil;
+}
+
+export const WEATHER_COND_MAP: Record<string, string> = {
+  'sunny': 'ಬಿಸಿಲು',
+  'clear': 'ಸ್ವಚ್ಛ ಆಕಾಶ',
+  'partly cloudy': 'ಭಾಗಶಃ ಮೋಡ',
+  'cloudy': 'ಮೋಡ ಕವಿದಿದೆ',
+  'overcast': 'ದಟ್ಟ ಮೋಡ ಕವಿದಿದೆ',
+  'mist': 'ಮಂಜು ಮುಸುಕಿದ ವಾತಾವರಣ',
+  'patchy rain nearby': 'ಸಾಧಾರಣ / ಚದುರಿದ ಮಳೆ',
+  'patchy rain possible': 'ಚದುರಿದ ಮಳೆಯ ಸಾಧ್ಯತೆ',
+  'light rain': 'ಹಗುರ ಮಳೆ',
+  'moderate rain': 'ಮಧ್ಯಮ ಮಳೆ',
+  'heavy rain': 'ಭಾರಿ ಮಳೆ',
+  'patchy light rain': 'ಚದುರಿದ ಹಗುರ ಮಳೆ',
+  'moderate rain at times': 'ಕೆಲವೊಮ್ಮೆ ಮಧ್ಯಮ ಮಳೆ',
+  'heavy rain at times': 'ಕೆಲವೊಮ್ಮೆ ಭಾರಿ ಮಳೆ',
+  'light drizzle': 'ತುಂತುರು ಮಳೆ',
+  'thundery outbreaks in nearby': 'ಗುಡುಗು ಸಹಿತ ಮಳೆ',
+  'thundery outbreaks possible': 'ಗುಡುಗು ಸಹಿತ ಮಳೆಯ ಸಾಧ್ಯತೆ',
+  'fog': 'ದಟ್ಟ ಮಂಜು',
+};
+
+export function localizeWeatherCondition(conditionText: string, lang: Lang = 'en'): string {
+  if (lang !== 'kn' || !conditionText) return conditionText;
+  const key = conditionText.toLowerCase().trim();
+  if (WEATHER_COND_MAP[key]) return WEATHER_COND_MAP[key];
+  for (const [k, v] of Object.entries(WEATHER_COND_MAP)) {
+    if (key.includes(k)) return v;
+  }
+  return conditionText;
+}
