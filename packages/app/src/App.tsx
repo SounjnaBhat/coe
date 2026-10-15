@@ -196,7 +196,7 @@ export default function App() {
       name: '',
       phone: '',
       location: 'Dharwad',
-      stage: '30 days',
+      stage: 'Sowing',
       soil: 'Black Soil',
       isLoggedIn: false,
     };
@@ -229,7 +229,7 @@ export default function App() {
     pendingIntent: undefined as string | undefined,
     farmerId: userProfile.farmerId || 'f_guest',
     location: userProfile.location || 'Dharwad',
-    stage: userProfile.stage || '30 days',
+    stage: userProfile.stage || 'Sowing',
     weatherFeatures: { dToday: 60, forecastRain72h: 0 },
     lang: 'kn' as Lang
   });

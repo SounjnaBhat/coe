@@ -222,21 +222,29 @@ export function localizeLocation(location?: string, lang: Lang = 'en'): string {
 }
 
 export const STAGE_MAP: Record<string, string> = {
-  'sowing': 'ಬಿತ್ತನೆ ಹಂತ',
-  'sowing / seedling (0-15 days)': 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನ)',
-  'seedling': 'ಸಸಿ ಹಂತ',
-  'vegetative': 'ಬೆಳವಣಿಗೆ ಹಂತ',
-  'vegetative growth (15-45 days)': 'ಬೆಳವಣಿಗೆ ಹಂತ (15-45 ದಿನ)',
-  '30 days': '30 ದಿನಗಳು (ಬೆಳವಣಿಗೆ ಹಂತ)',
-  'flowering': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ',
-  'tasseling & flowering (45-65 days)': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ (45-65 ದಿನ)',
-  'grain filling': 'ಕಾಳು ತುಂಬುವ ಹಂತ',
+  'sowing': 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನಗಳು)',
+  'sowing (0-15 days)': 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನಗಳು)',
+  'sowing / seedling (0-15 days)': 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನಗಳು)',
+  'seedling': 'ಸಸಿ ಹಂತ (0-15 ದಿನಗಳು)',
+  'vegetative': 'ಬೆಳವಣಿಗೆ ಹಂತ (15-45 ದಿನಗಳು)',
+  'vegetative (30 days)': 'ಬೆಳವಣಿಗೆ ಹಂತ (30 ದಿನಗಳು)',
+  'vegetative growth (15-45 days)': 'ಬೆಳವಣಿಗೆ ಹಂತ (15-45 ದಿನಗಳು)',
+  '30 days': 'ಬೆಳವಣಿಗೆ ಹಂತ (30 ದಿನಗಳು)',
+  'flowering': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ (45-65 ದಿನಗಳು)',
+  'flowering (45 days)': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ (45 ದಿನಗಳು)',
+  '45 days': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ (45 ದಿನಗಳು)',
+  'tasseling & flowering (45-65 days)': 'ಹೂವು ಮತ್ತು ತೆನೆ ಹಂತ (45-65 ದಿನಗಳು)',
+  'grain filling': 'ಕಾಳು ತುಂಬುವ ಹಂತ (60 ದಿನಗಳು)',
+  'grain filling (60 days)': 'ಕಾಳು ತುಂಬುವ ಹಂತ (60 ದಿನಗಳು)',
+  '60 days': 'ಕಾಳು ತುಂಬುವ ಹಂತ (60 ದಿನಗಳು)',
   'grain filling & maturity (65-90+ days)': 'ಕಾಳು ತುಂಬುವ / ಕೊಯ್ಲು ಹಂತ',
+  'harvest': 'ಕೊಯ್ಲು ಹಂತ',
+  'harvest stage': 'ಕೊಯ್ಲು ಹಂತ',
   'maturity': 'ಕೊಯ್ಲು ಹಂತ',
 };
 
 export function localizeStage(stage?: string, lang: Lang = 'en'): string {
-  if (!stage) return lang === 'kn' ? 'ಬೆಳವಣಿಗೆ ಹಂತ' : 'Vegetative';
+  if (!stage) return lang === 'kn' ? 'ಬಿತ್ತನೆ ಹಂತ (0-15 ದಿನಗಳು)' : 'Sowing (0-15 days)';
   if (lang !== 'kn') return stage.replace(/\(.*\)/g, '').trim();
   const cleaned = stage.toLowerCase().trim();
   if (STAGE_MAP[cleaned]) return STAGE_MAP[cleaned];

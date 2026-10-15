@@ -16,7 +16,7 @@ export function ProfilePage({ user, lang, onUpdateProfile, onLogout, weatherFeat
   const [name, setName] = useState(user.name);
   const [phone, setPhone] = useState(user.phone);
   const [location, setLocation] = useState(user.location || 'Dharwad');
-  const [stage, setStage] = useState(user.stage || '30 days');
+  const [stage, setStage] = useState(user.stage || 'Sowing');
   const [soil, setSoil] = useState(user.soil || 'Black Soil');
   const [savedNotice, setSavedNotice] = useState(false);
 

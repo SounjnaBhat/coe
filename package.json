@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@advisor/app",
+    "build": "npm run build --workspace=@advisor/app && node scripts/copy-dist.js",
     "test": "vitest run",
     "lint": "eslint .",
     "ask": "npx tsx packages/app/src/cli.ts",

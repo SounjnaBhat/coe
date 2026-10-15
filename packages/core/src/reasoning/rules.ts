@@ -114,7 +114,9 @@ export class RuleEngine {
 
         // Estimate days since last significant rain (assume 3-5 days in monsoon)
         const daysSinceRain = forecastRain72h > 10 ? 1 : 4;
-        const currentDepletion = Math.min(dailyETc * daysSinceRain, taw);
+        const currentDepletion = (features.dToday !== undefined && features.dToday !== null)
+            ? features.dToday
+            : Math.min(dailyETc * daysSinceRain, taw);
 
         const context: RuleContext = {
             intent: frame.intent,
